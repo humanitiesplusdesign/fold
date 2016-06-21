@@ -1,0 +1,13 @@
+Sequence	Name	Estate	Politics	Procedural Move	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments	
+1	Sixth Bureau		conservative	B1, C1				
+2	D'André	Nob/Nob/legal	liberal	A5	Sixth Bureau	-1	(rejects arts. 1-2)	
+3	D'André	Nob/Nob/legal	liberal	B2	Sixth Bureau	1	(amends arts. 3-5) based on Lafayette	
+5	D'André	Nob/Nob/legal	liberal	B3	Lafayette	1		
+6	Target	Third/Third/legal	liberal	A5	Sixth Bureau	-1	(rejects arts. 1-10)	
+7	Target	Third/Third/legal	liberal	B1, C1				
+8	La Luzerne	Nob/clergy/	libertarian	C2	Sixth Bureau	1	(amends arts. 1-2)	
+9	Boisgelin	Nob/clergy/						
+10	Anonymous		conservative	C1				
+11	Mounier	Third/Third/legal		A1				
+12	[Editor?]			A2				
+13	Mounier	Third/Third/legal		A1				

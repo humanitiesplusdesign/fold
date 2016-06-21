@@ -1,0 +1,14 @@
+Name	Estate	Procedural Moveq	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments	Politics
+Sixth Bureau		C1			Article 7	conservative
+Lameth	Nob/Nob/Military	C3	Sixth Bureau	-1	Article 7-10	conservative + liberal
+Lameth	Nob/Nob/Military	A1				liberal - + libertarian
+Camus, Blin, Mougins de Rocquefort, Martineau		A2	Lameth	1	remove "evidemment"	conservative
+Martineau		B2	Lameth	-1		libertarian
+Duport		C5	Martineau	1		conservative
+Luzerne		C2	Lameth	-1		conservative
+Populus, Volney		A5	Luzerne	-1		liberal
+Rhedon	Nob/Nob/Military	A5	Luzerne	-1		liberal
+D'André		B3	Committee of 5	1		liberal
+Committee of 5		B1			article 6 (slightly amended)	liberal
+Anonymous		C2	Lameth	-1		traditional
+Lameth		A1				liberal - + libertarian
