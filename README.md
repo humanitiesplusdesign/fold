@@ -20,3 +20,16 @@ For Writing Rights the purpose was both to show how the participation of individ
 
 In Example #2 the opacity does not drop because the goal is to track each discrete procedural move in sequence. Change of intensity over the course of the debate is not the question as it is with Example #1. 
 
+Figure 1: Political Dynamics comparison by debate  
+![Political Dynamics, Figure 1](/assets/politicaldynamics_all.png)
+
+Figure 2: Color scheme for Political Dynamics
+![Political Dynamics, Figure 2](/assets/politicaldynamics_color.png)
+---
+
+Figure 3: Procedural Moves comparison by debate  
+![Procedural Moves, Figure 3](/assets/proceduralmoves_all.png)
+
+Figure 4: Color scheme for Political Dynamics
+![Procedural Moves, Figure 4](/assets/proceduralmoves_color.png)
+
