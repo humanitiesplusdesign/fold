@@ -1,0 +1,4 @@
+Name	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments 	Politics
+Sixth Bureau	A1				liberal
+Anonymous	A2				liberal
+adopted	A1				liberal

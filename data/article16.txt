@@ -1,0 +1,7 @@
+Name	Procedural	With	Politics	Comments
+Sixth Bureau	A1		liberal	
+Lally-Tollendal	A4	Sixth Bureau	liberal	Let's stop trying to debate this, we're just going to end up with the 6th bureau
+Chapelier	C1		liberal	
+Robespierre	A5	Chapelier	libertarian	
+Colbert de Seignelay	C1			
+Sixth Bureau	A1		liberal	

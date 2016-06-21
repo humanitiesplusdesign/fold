@@ -1,0 +1,10 @@
+Name	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments	Politics
+Sixth Bureau	B1			art. 22	liberal-libertarian
+Duport	A2	Sixth Bureau	1	Add "representatives" can accept taxs	liberal
+Duport	A2	Sixth Bureau	-1	Cut "retranché"... taxation isn't such a sacrifice	liberal
+Périsse-du-Luc	A4	Duport	1		liberal
+Périsse-du-Luc	B1			two articles	n/a
+Robespierre	C1				liberal-conservative
+Un curé	C1				liberal-conservative
+Laville-Leroux	A5	Robespierre	-1	He "fait sentir la différence de ces deux mots; l'un est ce que paye chaque citoyen; l'autre ce que paye la nation entière. Cette observation est trouvée judicieuse, et, quoique proposée après l'article discuté et passé, l'Assemblée n'y a pas eu moins d'égard" (8:487)	liberal
+adopted	?				liberal

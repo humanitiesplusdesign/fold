@@ -1,0 +1,20 @@
+Name	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments	Politics
+Sixth Bureau	A1			Note that this is a social right, not an individual one	liberal
+Périsse-du-Luc	C1			Wants to merge articles 14 and 15	liberal-conservative
+Lameth	C1			wants to add separation of powers -- article 16	liberal
+Bouche	C1			combine with article 14	liberal
+Duport	C1			replaces "société" with "nation"	liberal
+Anonymous1	A2	Sixth Bureau	1	wants to keep "société" instead of "nation": the nation, presumably, can only express itself via its representatives, whereas any member of society can demand answers.	liberal
+Anonymous2	C1			wants to call it quits	
+Montmorency	A5	Anonymous2		need to keep discussing	liberal
+Target	C1			skip art. 15, proposes what will become art. 16	liberal
+Rhédon	C1			skip art. 15; also jumps ahead to 16	liberal
+Boisgelin	A4	Rhédon	-1	makes a pitch for art. 15 (and what will become 16); debates what should go in Decl vs what shld go in Constitution	liberal
+Rewbell	C1				liberal
+Anonymous2	C1			Tout citoyen est en droit d'exiger de la société la garantie denses droits, et il est impossible qu'elle soit assurée sans la division des pouvoirs et la responsabilité.	libertarian
+Mounier	C1			still trying to combine art. 15 + 16	liberal
+d'André	C5	Mounier	-1		
+Clermont-Lodève	C5	Sixth Bureau	-1	conservative	
+Mounier	C4	Lameth	1		
+Lameth	C2	Sixth Bureau	-1	After the vote! Afraid that "agent" could be taken to mean the king	
+Sixth Bureau	A1			Note that this is a social right, not an individual one	liberal

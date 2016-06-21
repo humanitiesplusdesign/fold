@@ -1,0 +1,7 @@
+Name	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Politics
+Montmorency	C1			liberal-libertarian
+Desmeuniers	C4	Montmorency	1	liberal-libertarian
+Duport	A1		Physiocratic flavor?	liberal-libertarian
+Many anonymous	C1			
+Many anonymous	A2			
+Duport	A1		Physiocratic flavor?	liberal-libertarian

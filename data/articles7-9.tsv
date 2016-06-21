@@ -1,0 +1,23 @@
+Sequence	Name	Politics	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments
+1	Sixth Bureau	Liberal	B1			art 14
+2	Target	liberal	A1			
+3	Bonnay	liberal	B1, C1			
+4	Duport	liberal	A1			
+5	Lally-Tollendal	liberal	A4	Duport	1	
+6	Martineau	[wordsmithing]	C2	Target	0	
+7	Martineau	conservative	C2	Target	0	
+8	Anonymous1	conservative	C5	Target	-1	
+9	Mirabeau (comte)	liberal-libertarian	A5	Anonymous1	-1	
+10	Châtelet	conservative	C2	Target	0	add warrants
+11	Malouet	liberal	A3	Sièyes	1	add 19 from Sieyes
+12	Martineau	liberal	C2	Target		remove "accused"
+13	Martineau	conservative	C5	Target		Put second article of Target off until the constitution.
+14	Goucy d'Arcy	conservative	C3	Martineau	1	
+15	Mirabeau (comte)	liberal-libertarian	A5	Anonymous1	-1	
+16	Desmeuniers	liberal	A5	Châtelet	-1	refuting the warrants issue
+16	Malouet	liberal	A3	Duport/Target	1	Add Sieyes article to Duport 
+17	Boisgelin	liberal	C2	Target		(withdraws his amendment)
+17	d'André	liberal	A4	Malouet		
+18	Desmeuniers	liberal	A4	Malouet		Add Sieyes article to Target
+19	Anonymous2+	liberal	A2	Duport	1	
+20	adopted 7-9	liberal	A1			

@@ -1,0 +1,17 @@
+Name	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments	Politics
+Sixth Bureau	B1			article 19	liberal
+Lévis	C1			refs back to freedom of religious "action"	libertarian
+La Rochefoucauld	A1				liberal
+Rabaud de Saint-Etienne	C2	La Rochefoucauld	0	no limits to freedom	libertarian
+Target	B1				liberal
+Barrère de Vieuzac	B1				libertarian/liberal
+Robespierre	C2	La Rochefoucauld	-1		libertarian
+Thiébault ("Curé du baillage de Metz")	C2	La Rochefoucauld	-1		traditional
+Machault	C2	La Rochefoucauld	-1		traditional
+Desmontiers de Mérinville	B1				liberal
+Mirabeau (comte)	C2			do not "restrict" in advance, only "repress" if there actually was a crime	liberal
+"un ecclésiastique"	C2	La Rochefoucauld	-1		traditional
+Dupont	C2		0	minor	[n.a]
+Pétion	A5	Dupont	-1		[n.a]
+Unknown	A2			makes changes to "déterminés"	[n.a]
+La Rochefoucauld	A1			adopted	liberal
