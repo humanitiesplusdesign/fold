@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Annulus</title>
+
+  <link rel="stylesheet" href="assets/css/annulus.css">
+  <link href='https://fonts.googleapis.com/css?family=Poiret+One|Muli|Nunito' rel='stylesheet' type='text/css'>
+
+
+</head>
+
+<body>
+<div id="title">Annulus - a data visualization experiment</div>
+<div id="legend"></div>
+<div id="main"></div>
+<div id="control_container">
+  <h2>Controls</h2>
+  <input type="file" id="fileupload"/><br>
+  <button id="graph_button">Generate Rings</button>
+  <button id="demo_button">Demo: Article 10</button>
+  <form>
+    <br>
+  Pick a category to graph:<input type="text" id="category-select"><br><br>
+
+  Value 1 <input type="text" id="v1">  Color for Value 1 <input type="text" id="c1"><br>
+  Value 2 <input type="text" id="v2">  Color for Value 2 <input type="text" id="c2"><br>
+  Value 3 <input type="text" id="v3">  Color for Value 3 <input type="text" id="c3"><br>
+  Value 4 <input type="text" id="v4">  Color for Value 4 <input type="text" id="c4"><br>
+  Value 5 <input type="text" id="v5">  Color for Value 5 <input type="text" id="c5"><br>
+  <p> Undefined/other <input type="text" id="c0"></p>
+  <input type="sumbit" value="Update Values and Colors" id="submit">
+  </form>
+  <p>Instructions: upload a TSV of your choice containing a sequence/order column. Pick a category from the other columns of your TSV and select the values you would like to graph, as well as color for each value. Click update, and then generate your Annulus.</p>
+</div>
+
+
+
+
+
+</body>
+
+<script type="text/javascript" src="lib/d3.min.js"></script>
+<script type="text/javascript" src="assets/js/annulus.js"></script>

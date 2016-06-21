@@ -1,0 +1,36 @@
+Sequence	Name	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments	Politics
+1	Sixth Bureau 	B1			article 11	conservative
+2	Barrère de Vieuzac	B2	Sixth Bureau	1		liberal
+3	Beauharnais	B3	Sixth Bureau	0	articles 11-15
+4	Sixth Bureau 	B1			articles 11-15
+5	Beauharnais	B1				liberal
+6	Martineau	B1				liberal
+7	Camus	B3	Sixth Bureau	1	article 11 (not 9 -- typo in AP)	liberal
+8	Camus	B4	Martineau	1		liberal
+9	Camus	B1				liberal
+10	Chapelier	B2	Sixth Bureau	1
+11	Target 	B1				liberal
+12	Volney, Pison du Galand	A3	Sixth Bureau		article 12	liberal
+13	Sixth Bureau 	B1				liberal
+14	Martineau	B1				[not given in AP]
+15	Mounier	A2	Sixth Bureau		article 11	liberal
+16	Deschamps	A5	Mounier		removes "naissance"	conservative
+17	Gouy-d'Arcy	B1			"un article unique"	[not given in AP]
+18	Delandine	B1			"les reduit a deux"	[not given in AP]
+19	Luzerne [eveque de Langres]	B?			"font diverses observations"
+20	Lanjuinais	B?			"font diverses observations"
+21	Duport	B?			"font diverses observations"
+22	Salé de Choux 	B?			"font diverses observations"
+23	Others	B?			"font diverses observations"
+24	Buzot	B1				[not given in AP]
+25	Legrand	B1				[not given in AP]
+26	Talleyrand	A1				liberal
+27	Barnave	A5				liberal
+28	Mounier	A2	Talleyrand	1	"selon leur capacite"	liberal
+29	Anonymous	A2	Talleyrand	1	susceptible -> admissibles	liberal
+30	Anonymous	A2	Talleyrand	1	"sans distinction"	liberal
+31	Anonymous	C2	Talleyrand	1	"naissance"	liberal
+32	Anonymous	C2	Mounier	-1	declare it void	liberal
+33	Lally-Tollendal	A5	Anonymous	-1	against procedural mvmt	liberal
+34	Lally-Tollendal	A2	Talleyrand	1		liberal
+35	Adopted Talleyrand	A1				liberal

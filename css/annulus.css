@@ -1,0 +1,79 @@
+body {
+  background-color: #b3ffb3;
+}
+
+#title {
+  width: 100%;
+  text-align: center;
+  font-family: "Muli";
+  font-size: 40px;
+  background-color: #5cd65c;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+#main {
+    width: 500px;
+    height:500px;
+    position: absolute;
+    margin-left: 300px;
+}
+
+#legend {
+  position: absolute;
+  background-color: #e6fff3;
+  border-radius: 5px;
+  height: 500px;
+  width: 230px;
+  overflow: auto;
+
+  font-family: "Nunito";
+}
+
+#control_container {
+  background-color: #cce5ff;
+  border-radius: 5px;
+  position: absolute;
+  padding-left: 10px;
+  text-align: center;
+  height: 500px;
+  margin-left: 900px;
+  padding-top: 20px;
+  font-family: "Nunito";
+}
+
+input {
+    width: 100px;
+}
+
+#fileupload {
+  width: 200px;
+}
+
+#submit {
+  cursor: pointer;
+  text-align: center;
+  transition: .3s;
+  width: 200px;
+}
+
+#submit:hover {
+  background-color: #99ccff;
+}
+
+@keyframes animateRing {
+  0% { opacity: 0;}
+ 100% { opacity: 1;}
+}
+
+.ring {
+  opacity: 0;
+  animation: animateRing 5s ease 1;
+  animation-fill-mode: forwards;
+}
+
+.label {
+  opacity: 0;
+  animation: animateRing 1s linear 1;
+  animation-fill-mode: forwards;
+}

@@ -1,0 +1,26 @@
+Sequence	estate	Name	Politics	Procedural	With	Valence (1= positive, 0 = neutral, -1 = negative)	Comments
+1	nobility	Sixth Bureau 	traditional	C1			articles 16-18
+2	clergy	Bonnal	traditional	C2	Sixth Bureau 	1	articles 16-17
+3	clergy	Laborde	liberal	A5	Sixth Bureau 	-1	pro-toleration
+4	third estate	Mirabeau (comte)	libertarian	A5	Sixth Bureau 	-1	toleration too weak; absolute right!
+5	clergy	Eymar	conservative	C3	Sixth Bureau 	1	pro-established religion (on Anglican model)
+6	third estate	Camus	conservative	C2	Eymar	1
+7	third estate	Petion de Villeneuve	libertarian	A2	Sixth Bureau 	-1	rejecting arts 16-17
+8	third estate	Maillot	conservative+liberal	B3	Castellane	1
+9	nobility	Castellane	conservative+liberal	C1, A1			first half conservative ("La religion étant le plus solide de tous les biens politiques"), second half liberal/libertarian ("nul homme ne peut être inquiété dans ses opinions religieuses")
+10	third estate	Bouche	liberal	A2	Sixth Bureau 	-1	rejecting arts 16-17
+11	third estate	Bouche	conservative + libertarian	C1			refs 1785 royal decree tolerating Protestantism
+12	clegy	Eymar	conservative	C2	Sixth Bureau 	1	We'll leave discussion of 'culte' until the constitution. Focus on 'religion' for good order of society.
+13	third estate	Mirabeau (comte)	liberal	A5	Eymar	-1	procedural point, opposing Eymar because the motion is to postpone debate over arts. 16-17
+14	nobility	Mirabeau (vicomte)	liberal	A3	Castellane	1	only "first part" ("Nul homme ne doit être inquiété pour ses opinions religieuses"); rejected second part, "ni troublé dans l'exercice de son culte"
+15	nobility	Castellane		C1, A1
+16	nobility	Clermont-Lodève	conservative	C3	Sixth Bureau	1	in favor of arts 16-17; cites Rousseau!
+17	clergy	Talleyrand 	liberal	A5			17 belongs in the constitution and 16 is problematic.
+18	nobility	Castellane	liberal	C1, A1			Renews his motion: ""Nul homme ne doit être inquiété pour ses opinions religieuses ni troublé dans l'exercice de son culte"
+19	third estate	Mirabeau (comte)	libertarian	A5	Castellane	-1	attacks the second part of Castellane's motion (on the free exercise of religious culte)
+20	nobility	Castellane	conservative+liberal	C4			defends his whole proposal
+21	clergy	Juigné	conservative	C5	Castellane	1	Opposes the motion to remove the second part.
+22	third estate	Rabaud de Saint-Etienne	liberal	C1			Rabaud speaks at length and offers a proposal in favor of religious freedom. Essentially a plea for non catholics, i.e. protestants. "Tout homme est libre dans ses opinions; tout citoyen a le droit de professer librement son culte, et nul ne peut être inquiété à cause de sa religion."
+23	clergy	Gobel	conservative+liberal	A5	Rabaud de Saint-Etienne	-1	no institutionalized status of religion/just about ordre public. No one can prevent non-catholics from practicing their religion. They must do so in a way that does not disturb public order. "...pourvu que leur manifestation ne troublé pas l'ordre public."
+24	unknown	anonymous	liberal	A2			"as established by the law" is added to Gobel's ammendment.
+25		adopted	liberal	A1
