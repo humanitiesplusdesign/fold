@@ -1,4 +1,4 @@
-# annulus
+# Annulus
 
 Annulus is a product of the Writing Rights project within Humanities + Design at the Center for Spatial and Textual Analysis, Stanford University. Annulus is a graphic form that mimics the rings of a tree to show the pattern of emergence. Each ring represents one step or one 'action' and color is used to distinguish types of actions. The radian measure could be used to indicate the relative duration of the action. Annulus can be used alone or in multiples to compare discrete stages in a larger event.
 
