@@ -8,22 +8,24 @@
 
   <link rel="stylesheet" href="assets/css/annulus.css">
   <link href='https://fonts.googleapis.com/css?family=Poiret+One|Muli|Nunito' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=News+Cycle' rel='stylesheet' type='text/css'>
 
+  <style type='text/css' id="animation"></style>
 
 </head>
 
 <body>
-<div id="title">Annulus - a data visualization experiment</div>
+<div id="title"><div id="name">Annulus</div><div id="subtitle">a data visualization experiment</div></div>
 <div id="legend"></div>
 <div id="main"></div>
 <div id="control_container">
-  <h2>Controls</h2>
+  <h2>Controls and Parameters</h2>
   <input type="file" id="fileupload"/><br>
-  <button id="graph_button">Generate Rings</button>
+  <button id="graph_button">Generate Annulus</button>
   <button id="demo_button">Demo: Article 10</button>
   <form>
     <br>
-  Pick a category to graph:<input type="text" id="category-select"><br><br>
+  Pick a category to graph <input type="text" id="category-select"><br><br>
 
   Value 1 <input type="text" id="v1">  Color for Value 1 <input type="text" id="c1"><br>
   Value 2 <input type="text" id="v2">  Color for Value 2 <input type="text" id="c2"><br>
