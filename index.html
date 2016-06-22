@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="assets/css/annulus.css">
   <link href='https://fonts.googleapis.com/css?family=Poiret+One|Muli|Nunito' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=News+Cycle' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="lib/jquery-ui-1.11.4.custom/jquery-ui.css">
 
   <style type='text/css' id="animation"></style>
 
@@ -23,6 +24,8 @@
   <input type="file" id="fileupload"/><br>
   <button id="graph_button">Generate Annulus</button>
   <button id="demo_button">Demo: Article 10</button>
+  <button id="slide_button" disabled>View Step by Step</button>
+  <button id="test_button">TEST</button>
   <form>
     <br>
   Pick a category to graph <input type="text" id="category-select"><br><br>
@@ -37,12 +40,11 @@
   </form>
   <p>Instructions: upload a TSV of your choice containing a sequence/order column. Pick a category from the other columns of your TSV and select the values you would like to graph, as well as color for each value. Click update, and then generate your Annulus.</p>
 </div>
-
-
-
-
-
+<div id="bottom"><div id="slider"></div></div>
 </body>
 
 <script type="text/javascript" src="lib/d3.min.js"></script>
 <script type="text/javascript" src="assets/js/annulus.js"></script>
+<!-- <script type="text/javascript" src="lib/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script> -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+ <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
