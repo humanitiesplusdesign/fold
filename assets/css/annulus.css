@@ -1,18 +1,37 @@
 body {
-  background-color: #b3ffb3;
+  background-color: white;
+  overflow: hidden;
 }
 
 #title {
   width: 100%;
   text-align: center;
-  font-family: "Muli";
-  font-size: 40px;
-  background-color: #5cd65c;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  font-family: "News Cycle", sans-serif;
+  color: #262626;
+  border-bottom: 3px solid #5cd65c;
+  transition: .2s;
+  font-weight: bold;
+  height: 70px;
+  overflow: hidden;
+}
+
+#name {
+  float: left;
+  margin-left: 30px;
+  font-size: 45px;
+  cursor:pointer;
+}
+#subtitle {
+  float: right;
+  margin-right: 10px;
+  font-size: 25px;
+  margin-top: 28px;
+  color: #999999;
 }
 
 #main {
+    padding-top: 15px;
+    padding-left: 15px;
     width: 500px;
     height:500px;
     position: absolute;
@@ -21,30 +40,68 @@ body {
 
 #legend {
   position: absolute;
-  background-color: #e6fff3;
-  border-radius: 5px;
-  height: 500px;
+  height: 530px;
   width: 230px;
   overflow: auto;
-
+  border-right:1px solid #5cd65c;
   font-family: "Nunito";
 }
 
 #control_container {
-  background-color: #cce5ff;
-  border-radius: 5px;
   position: absolute;
   padding-left: 10px;
   text-align: center;
-  height: 500px;
+  height: 530px;
   margin-left: 900px;
-  padding-top: 20px;
-  font-family: "Nunito";
+  font-family: "News Cycle";
+  color: #262626;
+  line-height: 95%;
+  border-left: 1px solid #5cd65c;
+}
+
+button, input {
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  font-family: "News Cycle";
+  color: #262626;
+  border: 1px solid #5cd65c;
+  background-color: white;
+  transition: .2s;
+}
+
+input[type="text"] {
+  padding-left: 3px;
+  cursor: text;
+}
+
+button:focus {
+  outline: none
+}
+
+button:disabled {
+  color: black;
+  border: 1px solid gray;
+  background-color: gray;
+  opacity: .5;
+}
+
+button:disabled:hover {
+  background-color: gray;
+  cursor: default;
+}
+
+button:hover {
+  background-color: #e6e6e6;
 }
 
 input {
     width: 100px;
+    margin-bottom: 3px;
+    padding-bottom: 2px;
+    padding-left: 2px;
 }
+
 
 #fileupload {
   width: 200px;
@@ -66,14 +123,41 @@ input {
  100% { opacity: 1;}
 }
 
-.ring {
-  opacity: 0;
-  animation: animateRing 5s ease 1;
-  animation-fill-mode: forwards;
-}
-
 .label {
   opacity: 0;
   animation: animateRing 1s linear 1;
   animation-fill-mode: forwards;
+}
+
+::-webkit-scrollbar {
+    width: 4px;
+    border: 2px solid #5cd65c;
+}
+
+::-webkit-scrollbar-track {
+  background-color: white;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #5cd65c;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-button {
+background-color: #5cd65c;
+height: 5px;
+border-radius: 4px;
+}
+
+#bottom {
+  width: 100%;
+  border-top: 2px solid #5cd65c;
+  margin-top: 530px;
+  padding-left: 230px;
+  padding-right:300px;
+  padding-top: 5px;
+}
+
+#slider {
+  height: 20px;
+  width: 670px;
 }
