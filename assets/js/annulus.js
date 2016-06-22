@@ -1,5 +1,3 @@
-// add way to choose color and choose corresponding category
-
 (function () {
 var main_svg;
 
@@ -9,8 +7,8 @@ var currentFile;
 var currentResult;
 
 //numbers
-var startSize = 7;
-var incrSize = 9;
+var startSize = 5;
+var incrSize = 10;
 var size = 500;
 var center = size / 2;
 
@@ -68,6 +66,7 @@ function setupRings() {
   d3.select("#c0").property("value", color0);
 }
 
+//sets specific colors and categories
 function setupDemo() {
   category = "Politics";
   value1 = "traditional";
@@ -95,13 +94,26 @@ function setupDemo() {
 
 // draws an individual ring, requires order (integer), a color, and the maximum order of all of the rings
 function drawRings(order, value, max) {
-      console.log(value);
+      // calculate desired radius based on order in sequence - earlier rings get larger radii
+      var radius = (max * incrSize + startSize) - incrSize * order;
+      var circleName = "circle" + order;
+      var animationName = "animateSize" + order;
+      // a hack of sorts - inserts a unique animation into <style> tag at header for each size circle.
+      // alternative which i couldn't get to work: insert rules into stylesheet (@keyframes doesnt behave well with this)
+      var new_rule = "\
+      @keyframes " + animationName + "{0% {r: 0px;} 100% {r: " + radius + "px;}}\
+      ";
+      var current_animations = d3.select("#animation").text();
+
+      //adds the new animation rule for the new circle
+      d3.select("#animation").text(current_animations + new_rule);
       //draw a circle
       main_svg.append("circle")
-          .attr("class", "ring")
+          .attr("id", circleName)
           .attr("cx", center)
           .attr("cy", center)
-          .attr("r", (max * incrSize + startSize) - incrSize * order)
+          .attr("r", radius)
+          .style("opacity", 0)
           .style("fill", function() {
               if (value == value1) return color1;
               if (value == value2) return color2;
@@ -110,9 +122,10 @@ function drawRings(order, value, max) {
               if (value == value5) return color5;
               return color0;
           })
-          .attr("stroke", "white")
-          .style("animation-delay", order / 10 + "s");
-
+          .attr("stroke", "#b3ffb3")
+          .style("animation", animationName + " 5s linear 1, animateRing 3s linear 1")
+          .style("animation-fill-mode", "forwards")
+          .style("animation-delay", .3 * order + "s");
     };
 
 // does exactly that
@@ -132,13 +145,16 @@ function updateValuesAndColors() {
 }
 
 setupRings();
+// add button functionality
 document.getElementById("graph_button").addEventListener("click", function(){graphTSV()});
 document.getElementById("submit").addEventListener("click", function(){updateValuesAndColors()});
 document.getElementById("demo_button").addEventListener("click", function(){graphDemo()});
 
-
 function graphDemo() {
   setupDemo();
+  clearScreen();
+  //reset svg area
+  setupRings();
   //passes the result of the file reader to d3
   d3.tsv("article10.tsv", function(data){
     // converts to integer
@@ -166,6 +182,7 @@ function graphDemo() {
 }
 
 function graphTSV() {
+  clearScreen();
   d3.tsv(currentResult, function(data){
     // converts to integer
     data.forEach(function(d) {
@@ -192,6 +209,16 @@ function graphTSV() {
           .style("animation-delay", d.Sequence / 10 + "s");
     })
   });
+}
+  //clear everything
+function clearScreen() {
+  d3.select("#main").html("");
+  d3.select("#animation").text("");
+  d3.select("#legend").html("");
+}
+
+function stepByStep() {
+
 }
 
 })();
