@@ -1,5 +1,8 @@
+// TO DO : fix slider logic, implement zoom feature,
+
 (function () {
 var main_svg;
+var s_exists = false;
 
 // data
 var ring_data;
@@ -11,6 +14,7 @@ var startSize = 5;
 var incrSize = 10;
 var size = 500;
 var center = size / 2;
+var current_max = 1;
 
 //colors
 var category = "Politics";
@@ -123,7 +127,7 @@ function drawRings(order, value, max) {
               return color0;
           })
           .attr("stroke", "#b3ffb3")
-          .style("animation", animationName + " 5s linear 1, animateRing 3s linear 1")
+          .style("animation", animationName + " 3s linear 1, animateRing 3s linear 1")
           .style("animation-fill-mode", "forwards")
           .style("animation-delay", .3 * order + "s");
     };
@@ -149,12 +153,29 @@ setupRings();
 document.getElementById("graph_button").addEventListener("click", function(){graphTSV()});
 document.getElementById("submit").addEventListener("click", function(){updateValuesAndColors()});
 document.getElementById("demo_button").addEventListener("click", function(){graphDemo()});
+document.getElementById("slide_button").addEventListener("click", function(){createSlider()});
+document.getElementById("test_button").addEventListener("click", function(){createSliderStepUp()});
+
+function createSlider() {
+  $( "#slider" ).slider({
+    slide: function(event, ui) {
+      var value =  $( "#slider" ).slider("value");
+      createSliderStepUp(value);
+    }
+  });
+  s_exists = true;
+  setSliderMax();
+
+}
 
 function graphDemo() {
   setupDemo();
   clearScreen();
   //reset svg area
   setupRings();
+
+  d3.select("#slide_button").attr("disabled", null);
+
   //passes the result of the file reader to d3
   d3.tsv("article10.tsv", function(data){
     // converts to integer
@@ -163,6 +184,8 @@ function graphDemo() {
     })
     // finds number of entries
     var max = d3.max(data, function(d) { return d.Sequence; });
+    current_max = max;
+    setSliderMax();
     data.forEach(function(d) {
       var value = d.Politics;
       drawRings(d.Sequence, value, max);
@@ -179,10 +202,12 @@ function graphDemo() {
         .style("animation-delay", d.Sequence / 10 + "s");
     })
   });
+
 }
 
 function graphTSV() {
   clearScreen();
+  setupRings();
   d3.tsv(currentResult, function(data){
     // converts to integer
     data.forEach(function(d) {
@@ -190,6 +215,8 @@ function graphTSV() {
     })
     // finds number of entries
     var max = d3.max(data, function(d) { return d.Sequence; });
+    current_max = max;
+      setSliderMax();
     if (max > 30) {incrSize = 5;}
 
     data.forEach(function(d) {
@@ -209,6 +236,7 @@ function graphTSV() {
           .style("animation-delay", d.Sequence / 10 + "s");
     })
   });
+
 }
   //clear everything
 function clearScreen() {
@@ -217,8 +245,35 @@ function clearScreen() {
   d3.select("#legend").html("");
 }
 
-function stepByStep() {
-
+//sets maximum value of slider based on number of rings
+function setSliderMax() {
+  if (s_exists) $( "#slider" ).slider("option", "max", current_max);
 }
+
+function createSliderStepUp(value) {
+  d3.select("#animation").text("");
+
+  for (var i = 1; i < value + 1; i++) {
+    var animationName = "animateSize" + i;
+    d3.select("#circle" + i).attr("r", startSize + incrSize * (value - 1 - i));
+    var currentRadius = d3.select("#circle" + i).attr("r");
+    var newRadius = startSize + incrSize * (value - i);
+  console.log("circle" + i + ": cr = " + currentRadius + ", nr = " + newRadius);
+    var new_rule = "\
+    @keyframes " + animationName + "{0% {r: " + currentRadius + "px;} 100% {r: " + newRadius + "px;}}\
+    ";
+    var current_animations = d3.select("#animation").text();
+
+    //adds the new animation rule for the new circle
+    d3.select("#animation").text(current_animations + new_rule);
+    d3.select("#circle" + i).style("opacity", 1).style("visibility", "visible").style("animation", animationName + " 3s linear 1").style("animation-fill-mode", "forwards");
+  }
+
+  for (var i = value; i < current_max; i++) {
+    d3.select("#circle" + i).style("visibility", "hidden");
+  }
+  //create the new smallest circle and size it up
+}
+
 
 })();
