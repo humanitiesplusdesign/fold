@@ -53,8 +53,7 @@ input {
 }
 
 #text_container {
-  width: 50%;
-  height: 1000px;
+  width: 650px;
   float: left;
   margin-left: 50px;
   margin-top: 20px;
@@ -63,6 +62,7 @@ input {
   opacity: 0;
 }
 
+
 #text_container::selection {
   background-color: black;
   color: white;
@@ -70,15 +70,15 @@ input {
 
 #selection {
   position: absolute;
-  background-color: white;
-  color: black;
+  background-color: black;
+  color: white;
   transition: 1s;
   opacity: 0;
 }
 
 #selection::selection {
-  background-color: black;
-  color: white;
+  background-color: white;
+  color: black;
 }
 
 #control_container {
@@ -100,4 +100,21 @@ input {
 
 #instructions1 {
   opacity: 1;
+}
+
+.highlightSpan {
+  cursor: pointer;
+}
+
+.highlightSpan::selection {
+  color: white;
+  background-color: black;
+}
+
+
+.sidenote {
+  left: 740px;
+  position: absolute;
+  cursor: not-allowed;
+  font-family: "News Cycle";
 }
