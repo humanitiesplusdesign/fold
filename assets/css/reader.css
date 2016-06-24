@@ -1,0 +1,103 @@
+button, input {
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  font-family: "News Cycle";
+  color: #262626;
+  border: 1px solid #5cd65c;
+  background-color: white;
+  transition: .2s;
+}
+
+#title {
+  width: 100%;
+  text-align: center;
+  font-family: "News Cycle", sans-serif;
+  color: #262626;
+  border-bottom: 3px solid #5cd65c;
+  transition: .2s;
+  font-weight: bold;
+  height: 50px;
+  overflow: hidden;
+}
+
+#name {
+  float: left;
+  margin-left: 30px;
+  font-size: 30px;
+  cursor:pointer;
+  margin-top: 0px;
+}
+#subtitle {
+  float: right;
+  margin-right: 10px;
+  font-size: 25px;
+  margin-top: 8px;
+  color: #999999;
+}
+
+button {
+  width: 100px;
+  height: 30px;
+  margin-right: 50px;
+}
+
+input {
+  padding-bottom: 2px;
+  padding-left: 1px;
+}
+
+@keyframes moveToCorner {
+  50% {opacity: 0}
+  100% {left: 70px; top: 40px; opacity: 0}
+}
+
+#text_container {
+  width: 50%;
+  height: 1000px;
+  float: left;
+  margin-left: 50px;
+  margin-top: 20px;
+  padding: 20px;
+  transition: 1s;
+  opacity: 0;
+}
+
+#text_container::selection {
+  background-color: black;
+  color: white;
+}
+
+#selection {
+  position: absolute;
+  background-color: white;
+  color: black;
+  transition: 1s;
+  opacity: 0;
+}
+
+#selection::selection {
+  background-color: black;
+  color: white;
+}
+
+#control_container {
+  position: fixed;
+  width: 500px;
+  margin-left: 60%;
+  margin-right: 50px;
+  margin-top: 20px;
+  padding: 10px;
+  font-family: "News Cycle";
+  font-size: 24px;
+  border-left: 1px solid #5cd65c;
+}
+
+.instructions {
+  transition: 2s;
+  opacity: 0;
+}
+
+#instructions1 {
+  opacity: 1;
+}
