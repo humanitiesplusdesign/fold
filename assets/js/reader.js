@@ -1,8 +1,7 @@
-//to do: add color and category select, find way to
-// retain proper ordering of elements based on place in text,
-// fix issue with ghost spans preventing re-highlighting
 // fix encoding of apostrophes by microsoft word
+//fix issue with bounding rectangles when page is scrolled down,find how to calculate scroll pixels
 var result;
+var colorMap = d3.map();
 var current_category = {
     "number": 1,
     "category": "conservative",
@@ -97,14 +96,49 @@ function confirmSelection() {
 }
 
 function newInstructions() {
-  var highlightScreen = "<p id='instructions3'>Input your categories and choose a corresponding color for each category.</p><br>\
-  <button id ='highlight'>Highlight this</button>"
+  var highlightScreen = "<p id='instructions3'>Input your categories and choose a corresponding color for each category. To select a highlight color, click on the button next to the desired category</p>";
+  highlightScreen += "<button id='highlight'>Highlight</button>" + "<p id='color_controls'>\
+    <form>\
+    Create Category: <input type='text' id='categoryH'><br>Choose Highlight Color: <input type='text' id='colorH'>\
+  </form>\
+  <button id='sub'>Enter</button>\
+  </p>\
+  <div id='current_colors'>\
+  </div>";
   d3.select("#control_container").html(highlightScreen);
 
+  document.getElementById("sub").addEventListener("click", function(){addNewCategory()});
   document.getElementById("highlight").addEventListener("click", function(){highlight()});
+  d3.select("#control_container").append("svg")
+  .attr("id", "svg_control_container");
+}
+
+function addNewCategory() {
+  var colorH = d3.select("#colorH").property("value");
+  var categoryH = d3.select("#categoryH").property("value");
+
+  colorMap.set(categoryH, colorH);
+  var controlsHTML = "";
+  var position = 15;
+  colorMap.forEach(function (key, value) {
+    var thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + key + " value=" + key + ">" + "</p>";
+    controlsHTML += thisControl;
+    d3.select("#current_colors").html(controlsHTML);
+    d3.select("#svg_control_container").append("circle")
+      .attr("id", value + key)
+      .attr("fill", value)
+      .attr("r", 10)
+      .attr("cx", 20)
+      .attr("cy", position);
+    position += 60;
+  });
+
 }
 
 function highlight() {
+  current_category.category = $('input[name=color]:checked').val();
+  current_category.color = colorMap.get($('input[name=color]:checked').val());
+
     var sel = window.getSelection();
     var selText = sel.toString();
     var range = sel.getRangeAt(0);
@@ -117,7 +151,6 @@ function highlight() {
 
     oRange = sel.getRangeAt(0); //get the text range
     oRect = oRange.getBoundingClientRect();
-
     d3.select("#text_container").append("div")
       .attr("class", "sidenote")
       .attr("id", "sidenote" + current_index)
@@ -144,9 +177,7 @@ function highlight() {
     console.log(jsonDB);
 }
 
-//fix this
 function removeThisHighlight(index, spanID) {
-    d3.select("#" + spanID).attr("id", "")
-      .style("background-color", "white");
+    $("#" + spanID).contents().unwrap();
     d3.select("#sidenote" + index).remove();
 }
