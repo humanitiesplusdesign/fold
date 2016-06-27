@@ -118,3 +118,11 @@ input {
   cursor: not-allowed;
   font-family: "News Cycle";
 }
+
+#svg_control_container {
+  position: fixed;
+  top: 470px;
+  left: 1000px;
+  height: 1000px;
+  float: right;
+}
