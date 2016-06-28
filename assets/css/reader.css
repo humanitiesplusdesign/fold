@@ -28,6 +28,20 @@ button, input {
   cursor:pointer;
   margin-top: 0px;
 }
+
+#name a {
+  text-decoration: none;
+  color: #262626;
+  transition: .08s;
+}
+
+#name a:hover {
+  text-decoration: none;
+  color: #5cd65c;
+}
+
+
+
 #subtitle {
   float: right;
   margin-right: 10px;
