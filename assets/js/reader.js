@@ -1,6 +1,8 @@
-// fix encoding of apostrophes by microsoft word
-//fix issue with bounding rectangles when page is scrolled down,find how to calculate scroll pixels
+// preserve paragrpahs when saved as web page..
+//overlapping bubbles
+//create text separation capacity,, add features to annulus capacity
 var result;
+var reader_svg;
 var colorMap = d3.map();
 var current_category = {
     "number": 1,
@@ -8,16 +10,10 @@ var current_category = {
     "color": "red"
   };
 var current_index = 1;
-var jsonDB = [
-  {
-    "index": 0, //place in the text that the line occurs
-    "text": "", //contents of line-height
-    "category": "", //used to determine colors
-    "color": "", /// unecessary but makes things easier
-    "comment": ""
-  }
-];
+// for storing data to generate annulus rings later
+var jsonDB = [];
 
+// add necessary event listeners
 document.getElementById("makeSelection").addEventListener("click", function(){makeSelection()});
 document.getElementById("undoSelection").addEventListener("click", function(){undoSelection()});
 document.getElementById("confirmSelection").addEventListener("click", function(){confirmSelection()});
@@ -25,20 +21,19 @@ document.getElementById("confirmSelection").addEventListener("click", function()
 //reads the file uploaded and displays to the left
 window.onload = function() {
   var fileupload = document.getElementById('fileupload');
-
     fileupload.addEventListener('change', function(e) {
       var file = fileupload.files[0];
-      currentFile = fileupload.files[0];
-
       var reader = new FileReader();
-
       reader.onload = function(e) {
           result = reader.result;
-          displayText(result);
+          displayText(encodeForWord(result));
       }
       reader.readAsText(file);
-
     });
+}
+
+function encodeForWord(text) {
+    return decodeURIComponent(encodeURIComponent(text));
 }
 
 // does exactly that
@@ -70,7 +65,7 @@ function makeSelection() {
     .attr("id", "selection")
     .html(selectedText)
     .style("left", oRect.left + "px")
-    .style("top", oRect.top + "px")
+    .style("top", oRect.top + + window.scrollY + "px")
     .style("width", oRect.width + "px")
     .style("height", oRect.height + "px");
   d3.select("#text_container").style("opacity", 0);
@@ -95,9 +90,10 @@ function confirmSelection() {
     newInstructions();
 }
 
+// sets up highlighting abilities and category/color selection
 function newInstructions() {
   var highlightScreen = "<p id='instructions3'>Input your categories and choose a corresponding color for each category. To select a highlight color, click on the button next to the desired category</p>";
-  highlightScreen += "<button id='highlight'>Highlight</button>" + "<p id='color_controls'>\
+  highlightScreen += "<button id='highlight'>Highlight</button>" + "<button id='annulus'>Annulus</button>" + "<p id='color_controls'>\
     <form>\
     Create Category: <input type='text' id='categoryH'><br>Choose Highlight Color: <input type='text' id='colorH'>\
   </form>\
@@ -109,10 +105,12 @@ function newInstructions() {
 
   document.getElementById("sub").addEventListener("click", function(){addNewCategory()});
   document.getElementById("highlight").addEventListener("click", function(){highlight()});
+  document.getElementById("annulus").addEventListener("click", function(){displayAnnulus()});
   d3.select("#control_container").append("svg")
   .attr("id", "svg_control_container");
 }
 
+// adds a new category with corresponding color for highlighting
 function addNewCategory() {
   var colorH = d3.select("#colorH").property("value");
   var categoryH = d3.select("#categoryH").property("value");
@@ -136,9 +134,11 @@ function addNewCategory() {
 }
 
 function highlight() {
+  // update the category and color used for highlighting rn
   current_category.category = $('input[name=color]:checked').val();
   current_category.color = colorMap.get($('input[name=color]:checked').val());
 
+    // get the selected text, put a span with appropriate id around it
     var sel = window.getSelection();
     var selText = sel.toString();
     var range = sel.getRangeAt(0);
@@ -151,25 +151,27 @@ function highlight() {
 
     oRange = sel.getRangeAt(0); //get the text range
     oRect = oRange.getBoundingClientRect();
+
+    var placement = oRect.top + window.scrollY;
+    //create text bubble to the left
     d3.select("#text_container").append("div")
       .attr("class", "sidenote")
       .attr("id", "sidenote" + current_index)
       .style("color", current_category.color)
-      .html("<p>" + current_category.category + " " + current_index + "</p>")
-      .style("top", oRect.top + "px");
+      .html("<p>" + current_category.category + "</p>")
+      .style("top", placement + "px");
 
     var this_index = current_index;
 
     document.getElementById("sidenote" + current_index).addEventListener("click", function(){
       removeThisHighlight(this_index, spanID);});
-
-
-
+    // update the array for building rings
     var segment = {
         "index": current_index,
         "text":  selText, //contents of line-height
         "category": current_category.category, //used to determine colors
         "color": current_category.color, /// unecessary but makes things easier
+        "placement": placement,
         "comment": "",
       };
     jsonDB.push(segment);
@@ -177,7 +179,87 @@ function highlight() {
     console.log(jsonDB);
 }
 
-function removeThisHighlight(index, spanID) {
+//removes the highlighted text given an index and an id
+function removeThisHighlight(number, spanID) {
+    //remove span, remove side note
     $("#" + spanID).contents().unwrap();
-    d3.select("#sidenote" + index).remove();
+    d3.select("#sidenote" + number).remove();
+    // delete highlight from db
+    for (var i = 0; i < jsonDB.length; i++) {
+        if (jsonDB[i].index == number) jsonDB.splice(i, 1);
+    }
+}
+
+function displayAnnulus() {
+  var controls = d3.select("#control_container");
+  var storeHTML = controls.html();
+
+  controls.html("");
+
+  reader_svg = controls.append("svg")
+  .attr("id", "svg_container")
+  .attr("width", 300)
+  .attr("height", 300)
+  .style("margin-left", "50px");
+
+  annulusPrep();
+
+  var currentHTML = controls.html();
+  controls.html(currentHTML + "<button id='back'>Back to Controls</back>");
+  document.getElementById("back").addEventListener("click", function(){
+    controls.html(storeHTML);
+    document.getElementById("sub").addEventListener("click", function(){addNewCategory()});
+    document.getElementById("highlight").addEventListener("click", function(){highlight()});
+    document.getElementById("annulus").addEventListener("click", function(){displayAnnulus()});
+    d3.select("#control_container").append("svg")
+    .attr("id", "svg_control_container");
+  });
+}
+
+function annulusPrep() {
+    var max = jsonDB.length;
+    jsonDB.sort(function(a, b) {
+      if (a.placement > b.placement) return 1;
+      if (a.placement < b.placement) return -1;
+      return 0;
+    })
+    for (var i = 0; i < jsonDB.length; i++) {
+        drawRing(i + 1, jsonDB[i].color, max);
+      }
+}
+
+function drawRing(order, color, max) {
+  // calculate desired radius based on order in sequence - earlier rings get larger radii
+  var radius = (max * 10 + 10) - 10 * order;
+  var opacity = order / max;
+  var circleName = "circle" + order;
+  var animationDelay = .1 * order;
+  var animationTime = .1 * max;
+
+  var animationName = "animateSize" + order;
+  // a hack of sorts - inserts a unique animation into <style> tag at header for each size circle.
+  // alternative which i couldn't get to work: insert rules into stylesheet (@keyframes doesnt behave well with this)
+  var new_rule = "\
+  @keyframes " + animationName + "{0% {r: 0px;} 100% {r: " + radius + "px;}}\
+  ";
+  var rule_with_opacity = "\
+  @keyframes " + animationName + "{0% {r: 0px; opacity: 1} 5% {r: 10px} 100% {r: " + radius + "px; opacity: " + opacity + "}}\
+  ";
+
+  var current_animations = d3.select("#animation").text();
+
+  //adds the new animation rule for the new circle
+  d3.select("#animation").text(current_animations + rule_with_opacity);
+  //draw a circle
+  reader_svg.append("circle")
+      .attr("id", circleName)
+      .attr("cx", 150)
+      .attr("cy", 150)
+      .attr("r", radius)
+      .style("opacity", 0)
+      .style("fill", color)
+      .attr("stroke", "#b3ffb3")
+      .style("animation", animationName + " " + animationTime + "s cubic-bezier(.2,.63,.66,.94) 1")
+      .style("animation-fill-mode", "forwards")
+      .style("animation-delay", animationDelay + "s");
 }
