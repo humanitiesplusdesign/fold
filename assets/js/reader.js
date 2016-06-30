@@ -1,8 +1,11 @@
-// preserve paragrpahs when saved as web page..
-//overlapping bubbles
-//create text separation capacity,, add features to annulus capacity
+// To-do:
+//implement paragraph separation logic
+  // get bottom of bounding rectangle of first highlight, set top of next to that, repeat
+//clean up grid view, fix callback for event listeners, add names , make the save function more usable
 var result;
+var svg_width = 400;
 var reader_svg;
+var grid_svg = "";
 var colorMap = d3.map();
 var current_category = {
     "number": 1,
@@ -12,6 +15,8 @@ var current_category = {
 var current_index = 1;
 // for storing data to generate annulus rings later
 var jsonDB = [];
+var annulusArray = [];
+var currentCircleArray = [];
 
 // add necessary event listeners
 document.getElementById("makeSelection").addEventListener("click", function(){makeSelection()});
@@ -38,6 +43,9 @@ function encodeForWord(text) {
 
 // does exactly that
 function displayText(result) {
+      d3.select("#control_container_before").attr("id", "control_container");
+      d3.select("#text_container_before").attr("id", "text_container");
+
       d3.select("#text_container").html(result).style("opacity", 1);
       d3.select("#instructions1").style("opacity", .3);
       d3.select("#fileupload").style("opacity", .3);
@@ -48,7 +56,8 @@ function makeSelection() {
   // get highlighted text
   var selectedText = "";
   if (window.getSelection) {
-    selectedText = window.getSelection().toString();
+    //selectedText = window.getSelection().toString();
+    selectedText = window.getSelection().getRangeAt(0);
   }
   // get general area of selected text
   oRange = window.getSelection().getRangeAt(0); //get the text range
@@ -103,11 +112,32 @@ function newInstructions() {
   </div>";
   d3.select("#control_container").html(highlightScreen);
 
+  highlightEventListeners();
+  d3.select("#control_container").append("svg")
+  .attr("id", "svg_control_container");
+}
+
+//only call when these buttons exist
+function highlightEventListeners() {
   document.getElementById("sub").addEventListener("click", function(){addNewCategory()});
   document.getElementById("highlight").addEventListener("click", function(){highlight()});
   document.getElementById("annulus").addEventListener("click", function(){displayAnnulus()});
-  d3.select("#control_container").append("svg")
-  .attr("id", "svg_control_container");
+  document.body.onkeyup = function(e){
+    if (window.getSelection().toString() != "") {
+        if (e.keyCode == 49) {
+          $("#check_" + 1).prop("checked", true);
+          highlight();
+        }
+        if (e.keyCode == 50) {
+          $("#check_" + 2).prop("checked", true);
+          highlight();
+        }
+        if (e.keyCode == 51) {
+          $("#check_" + 3).prop("checked", true);
+          highlight();
+        }
+    }
+  }
 }
 
 // adds a new category with corresponding color for highlighting
@@ -118,8 +148,9 @@ function addNewCategory() {
   colorMap.set(categoryH, colorH);
   var controlsHTML = "";
   var position = 15;
+  var index = 1;
   colorMap.forEach(function (key, value) {
-    var thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + key + " value=" + key + ">" + "</p>";
+    var thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + index + " value=" + key + ">" + "</p>";
     controlsHTML += thisControl;
     d3.select("#current_colors").html(controlsHTML);
     d3.select("#svg_control_container").append("circle")
@@ -129,7 +160,12 @@ function addNewCategory() {
       .attr("cx", 20)
       .attr("cy", position);
     position += 60;
+    index += 1;
   });
+}
+
+//to do
+function deleteCategory() {
 
 }
 
@@ -176,7 +212,6 @@ function highlight() {
       };
     jsonDB.push(segment);
     current_index += 1;
-    console.log(jsonDB);
 }
 
 //removes the highlighted text given an index and an id
@@ -198,45 +233,87 @@ function displayAnnulus() {
 
   reader_svg = controls.append("svg")
   .attr("id", "svg_container")
-  .attr("width", 300)
-  .attr("height", 300)
+  .attr("width", 400)
+  .attr("height", 400)
   .style("margin-left", "50px");
 
+  //draw the annulus
   annulusPrep();
+  drawAnnulus();
 
   var currentHTML = controls.html();
-  controls.html(currentHTML + "<button id='back'>Back to Controls</back>");
-  document.getElementById("back").addEventListener("click", function(){
+  controls.html(currentHTML + "<div id='circle_hover'>Click on a ring.</div>" + "<button id='back'>Back to Controls</button>" + "<button id='save'>Save Annulus</button>" + "<button id='grid'>View Saved</button>" + "<form><br><input type='text' id='save_name' /></form>");
+
+  // add event listener which displays the highlighted text under the rings when the specific ring is clicked on
+  d3.selectAll("circle").on("mousedown", function(d,i) {
+    var index = this.id.substring(6, 8);
+    console.log(index);
+    if (isNaN(index)) {index = +index.charAt(0);}
+    index = +index - 1;
+    var text = jsonDB[i].text;
+    if (text.length > 85) {
+      text = text.substring(0, 85) + "..."
+    }
+    d3.select("#circle_hover").html(jsonDB[i].category + " - " + "<span style='background-color: " + jsonDB[i].color + ";'>" + text + "</span>");
+  });
+  document.getElementById("back").addEventListener("click", function() {
+    //back button resets html to newisntructions and re-adds event listeners
     controls.html(storeHTML);
-    document.getElementById("sub").addEventListener("click", function(){addNewCategory()});
-    document.getElementById("highlight").addEventListener("click", function(){highlight()});
-    document.getElementById("annulus").addEventListener("click", function(){displayAnnulus()});
+    highlightEventListeners();
     d3.select("#control_container").append("svg")
     .attr("id", "svg_control_container");
   });
+  document.getElementById("save").addEventListener("click", function() {
+      var name = d3.select("#save_name").property("value");
+      var newName = true;
+      for (var i = 0; i < annulusArray.length; i++) {
+        if (annulusArray[i].name === name) newName = false;
+      }
+      if (name != "" && newName === true) saveAnnulus(name);
+  });
+  document.getElementById("grid").addEventListener("click", function () {gridView()});
 }
 
+//order the entries in jsonDB based on appearance order in text
 function annulusPrep() {
-    var max = jsonDB.length;
     jsonDB.sort(function(a, b) {
       if (a.placement > b.placement) return 1;
       if (a.placement < b.placement) return -1;
       return 0;
     })
-    for (var i = 0; i < jsonDB.length; i++) {
-        drawRing(i + 1, jsonDB[i].color, max);
-      }
 }
 
-function drawRing(order, color, max) {
-  // calculate desired radius based on order in sequence - earlier rings get larger radii
-  var radius = (max * 10 + 10) - 10 * order;
-  var opacity = order / max;
-  var circleName = "circle" + order;
-  var animationDelay = .1 * order;
-  var animationTime = .1 * max;
+//does exactly that
+function drawAnnulus() {
+  currentCircleArray = [];
+  var max_radius = svg_width / 2 - 10;
+  var center = svg_width / 2;
+  for (var i = 0; i < jsonDB.length; i++) {
+      //draw the ring
+      drawRing(i + 1, jsonDB[i].color, jsonDB.length, jsonDB[i].category, jsonDB[i].text, max_radius, "current", center);
+      var ring = {
+                    "order": i + 1,
+                    "color": jsonDB[i].color,
+                    "category": jsonDB[i].category
+                    };
+      //add to list of current circles in case the annulus needs to be saved
+      currentCircleArray.push(ring);
 
-  var animationName = "animateSize" + order;
+    }
+}
+
+//does exactly that
+function drawRing(order, color, max, circleCategory, circleText, max_radius, name, center) {
+  // calculate desired radius based on order in sequence - earlier rings get larger radii
+  var start_radius = 50 / max;
+  var increment = (max_radius - start_radius) / max;
+  var radius = max_radius - increment * order;
+  var opacity = order / max;
+  var circleName = "circle" + order + name;
+  var animationDelay = .1 * order;
+  var animationTime = .25 * max;
+
+  var animationName = "animateSize" + circleName;
   // a hack of sorts - inserts a unique animation into <style> tag at header for each size circle.
   // alternative which i couldn't get to work: insert rules into stylesheet (@keyframes doesnt behave well with this)
   var new_rule = "\
@@ -245,16 +322,22 @@ function drawRing(order, color, max) {
   var rule_with_opacity = "\
   @keyframes " + animationName + "{0% {r: 0px; opacity: 1} 5% {r: 10px} 100% {r: " + radius + "px; opacity: " + opacity + "}}\
   ";
-
   var current_animations = d3.select("#animation").text();
-
   //adds the new animation rule for the new circle
   d3.select("#animation").text(current_animations + rule_with_opacity);
   //draw a circle
-  reader_svg.append("circle")
+  var current_svg;
+  if (grid_svg != "") {
+      current_svg = grid_svg;
+    } else {
+      current_svg = reader_svg;
+    }
+
+  current_svg.append("circle")
       .attr("id", circleName)
-      .attr("cx", 150)
-      .attr("cy", 150)
+      .attr("class", "svgcircle")
+      .attr("cx", center)
+      .attr("cy", 200)
       .attr("r", radius)
       .style("opacity", 0)
       .style("fill", color)
@@ -262,4 +345,67 @@ function drawRing(order, color, max) {
       .style("animation", animationName + " " + animationTime + "s cubic-bezier(.2,.63,.66,.94) 1")
       .style("animation-fill-mode", "forwards")
       .style("animation-delay", animationDelay + "s");
+}
+
+// ring object: json file of array, category, color, with length of array as max and
+function Annulus(circleArray, name, index) {
+  this.circleArray = circleArray;
+  //circleArray = array of objects, each object is a circle containing color, category, and order;
+  this.max = circleArray.length;
+  this.draw = recreateAnnulus;
+  this.name = name;
+  this.index = index;
+}
+
+function saveAnnulus(name) {
+  var currentIndex = annulusArray.length;
+  var annulus = new Annulus(currentCircleArray, name, currentIndex);
+  annulusArray.push(annulus);
+  console.log(annulus);
+  console.log(annulusArray);
+}
+
+function recreateAnnulus(center) {
+  for (var i = 0; i < this.max; i++) {
+    var order = this.circleArray[i].order;
+    var color = this.circleArray[i].color;
+    var max = this.max;
+    var circleCategory = this.circleArray[i].category;
+    var name = this.name;
+    var max_radius = 200;
+
+    drawRing(order, color, max, circleCategory, name, max_radius, name, center);
+  }
+}
+
+function gridView() {
+  var body = d3.select("body");
+  var storeHTML = body.html();
+  body.html("");
+
+  var numAnnulus = annulusArray.length;
+  var width;
+  var height;
+
+  width = 500;
+  height = 500;
+
+  grid_svg = body.append("svg")
+    .attr("id", "grid_svg")
+    .attr("width", "1000%")
+    .attr("height", "1000px");
+
+  var center = width / 2;
+
+  for (var i = 0; i < annulusArray.length; i++) {
+      annulusArray[i].draw(center);
+      center += width;
+  }
+
+  body.append("div")
+  .html("<button id='back'>Back to Controls</button>");
+
+  document.getElementById("back").addEventListener("click", function() {
+        body.html(storeHTML);
+      }, function () {highlightEventListeners();  })
 }
