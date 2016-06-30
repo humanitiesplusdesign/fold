@@ -18,7 +18,6 @@ button, input {
   transition: .2s;
   font-weight: bold;
   height: 50px;
-  overflow: hidden;
 }
 
 #name {
@@ -39,8 +38,6 @@ button, input {
   text-decoration: none;
   color: #5cd65c;
 }
-
-
 
 #subtitle {
   float: right;
@@ -66,6 +63,15 @@ input {
   100% {left: 70px; top: 40px; opacity: 0}
 }
 
+#text_container_before {
+  float: left;
+  margin-left: 50px;
+  margin-top: 20px;
+  padding: 20px;
+  transition: 1s;
+  opacity: 0;
+}
+
 #text_container {
   width: 650px;
   float: left;
@@ -74,6 +80,18 @@ input {
   padding: 20px;
   transition: 1s;
   opacity: 0;
+}
+
+ #control_container {
+  position: fixed;
+  width: 500px;
+  margin-left: 820px;
+  margin-right: 50px;
+  margin-top: 20px;
+  padding: 10px;
+  font-family: "News Cycle";
+  font-size: 24px;
+  border-left: 1px solid #5cd65c;
 }
 
 
@@ -95,16 +113,13 @@ input {
   color: black;
 }
 
-#control_container {
-  position: fixed;
-  width: 500px;
-  margin-left: 60%;
-  margin-right: 50px;
-  margin-top: 20px;
-  padding: 10px;
+#control_container_before {
+  width: 600px;
+  padding-top: 20px;
+  margin: auto;
   font-family: "News Cycle";
-  font-size: 24px;
-  border-left: 1px solid #5cd65c;
+  font-size: 26px;
+  text-align: center;
 }
 
 .instructions {
@@ -113,6 +128,7 @@ input {
 }
 
 #instructions1 {
+  text-align: center;
   opacity: 1;
 }
 
@@ -139,4 +155,28 @@ input {
   left: 1000px;
   height: 1000px;
   float: right;
+}
+
+#circle_hover {
+  border-bottom: 1px solid #5cd65c;
+  width: 500px;
+}
+
+.svgcircle {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.svgcircle:hover {
+  opacity: 1;
+  background-color: #5cd65c;
+  transition: .2s;
+}
+
+#save_name {
+  cursor: text;
+}
+
+#grid_svg {
+  overflow: visible;
 }
