@@ -9,6 +9,10 @@ button, input {
   transition: .2s;
 }
 
+button:hover {
+  background-color:
+}
+
 #title {
   width: 100%;
   text-align: center;
@@ -87,7 +91,6 @@ input {
   width: 500px;
   margin-left: 820px;
   margin-right: 50px;
-  margin-top: 20px;
   padding: 10px;
   font-family: "News Cycle";
   font-size: 24px;
@@ -130,6 +133,10 @@ input {
 #instructions1 {
   text-align: center;
   opacity: 1;
+}
+
+#instructions3 {
+  display: none;
 }
 
 .highlightSpan {
@@ -177,6 +184,17 @@ input {
   cursor: text;
 }
 
+#saveform {
+  opacity: 0;
+  transition: .2s;
+}
+
 #grid_svg {
   overflow: visible;
+}
+
+#annulusName {
+  font-family: "News Cycle";
+  font-size: 16px;
+  border-bottom: 1px solid #5cd65c;
 }
