@@ -1,7 +1,78 @@
 // To-do:
 //implement paragraph separation logic
-  // get bottom of bounding rectangle of first highlight, set top of next to that, repeat
+// get bottom of bounding rectangle of first highlight, set top of next to that, repeat
 //clean up grid view, fix callback for event listeners, add names , make the save function more usable
+
+// Get rid of all .html except for table and initial loading of document:; change to all on page, hide with display:none until relevant
+
+// partitions = heirarchy[i]
+var heirarchy = {
+  "tree": [
+    // sections = heirarchy[i].sections
+    // partition name = heirarchy[i].id
+      {"id": "",
+      "sections": [
+        {
+          "topic": "topic1",
+          "text": ""
+          "segments"
+        },
+        {
+          "topic": "topic2",
+          "text": ""
+        }
+      ],
+    }
+    //new partition would start here
+  ],
+  "circleArray": []
+}
+
+function updateHeirarchyDisplay() {
+
+    var table = createTable();
+    d3.select("#tableOfContents").html(table);
+    createTableEventListeners();
+}
+
+function createTable() {
+    var currentTable = "<div id='tableOfContents'>";
+    for (var i = 0; i < heirarchy.tree.length; i++) {
+      var id = heirarchy.tree[i].id;
+      if (id === "") id = "Part" + (i + 1)
+
+      currentTable += "<h1 id=" + id + i + ">" + id + "</h1><br>";
+      for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+        var topic = (heirarchy.tree[i].sections.topic === "") ? heirarchy.tree[i].sections.topic : "Section" + (j + 1);
+
+        currentTable += "<h2 id=" + id + i + topic + j + ">" + topic + "</h2><br>";
+      }
+    }
+    currentTable += "</div>";
+    return currentTable;
+}
+
+function createTableEventListeners() {
+    for (var i = 0; i < heirarchy.tree.length; i++) {
+      var id = heirarchy.tree[i].id + i;
+      document.getElementById(id).addEventListener("click", function(id) {
+        displayThisSection(id);
+      });
+      for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+        var topic = (heirarchy.tree[i].sections.topic === "") ? heirarchy.tree[i].sections.topic : "Section" + (j + 1);
+        var sectionId = id + topic + j;
+        document.getElementById(sectionId).addEventListener("click", function(sectionId) {
+          displayThisSection(sectionId);
+      }
+    }
+}
+
+function displayThisSection(id) {
+    d3.selectAll(".section").style("display", "none")
+    d3.select("#" + id).style("display", "visible");
+}
+
+
 var result;
 var svg_width = 400;
 var reader_svg;
@@ -101,16 +172,8 @@ function confirmSelection() {
 
 // sets up highlighting abilities and category/color selection
 function newInstructions() {
-  var highlightScreen = "<p id='instructions3'>Input your categories and choose a corresponding color for each category. To select a highlight color, click on the button next to the desired category</p>";
-  highlightScreen += "<button id='highlight'>Highlight</button>" + "<button id='annulus'>Annulus</button>" + "<p id='color_controls'>\
-    <form>\
-    Create Category: <input type='text' id='categoryH'><br>Choose Highlight Color: <input type='text' id='colorH'>\
-  </form>\
-  <button id='sub'>Enter</button>\
-  </p>\
-  <div id='current_colors'>\
-  </div>";
-  d3.select("#control_container").html(highlightScreen);
+  d3.select()
+  d3.select("#instructions3").style("display", "visible");
 
   highlightEventListeners();
   d3.select("#control_container").append("svg")
@@ -121,7 +184,10 @@ function newInstructions() {
 function highlightEventListeners() {
   document.getElementById("sub").addEventListener("click", function(){addNewCategory()});
   document.getElementById("highlight").addEventListener("click", function(){highlight()});
-  document.getElementById("annulus").addEventListener("click", function(){displayAnnulus()});
+  document.getElementById("annulus").addEventListener("click", function(){
+  //  displayAnnulus();
+  separateIntoColumns();
+  });
   document.body.onkeyup = function(e){
     if (window.getSelection().toString() != "") {
         if (e.keyCode == 49) {
@@ -214,6 +280,34 @@ function highlight() {
     current_index += 1;
 }
 
+function separateIntoColumns() {
+  d3.select("#text_container").html("");
+  var top = 0;
+  for (var i = 0; i < jsonDB.length; i++) {
+    d3.select("#text_container").append("div")
+      .attr("id", "column_text_" + i)
+      .style("position", "absolute")
+      .style("top", function () {
+        if (top === 0) return jsonDB[i].placement + "px";
+        return (top - 5) + "px";
+      })
+      .style("left", function() {
+        if (i % 2 === 0) {
+          return "200px";
+        } else {
+          return "505px";
+        }
+      })
+      .html(jsonDB[i].text)
+      .style("width", "295px")
+      .style("border-left", "1px solid " + jsonDB[i].color);
+
+      top = document.getElementById("column_text_" + i).getBoundingClientRect().bottom;
+      console.log(top);
+  }
+
+}
+
 //removes the highlighted text given an index and an id
 function removeThisHighlight(number, spanID) {
     //remove span, remove side note
@@ -242,7 +336,7 @@ function displayAnnulus() {
   drawAnnulus();
 
   var currentHTML = controls.html();
-  controls.html(currentHTML + "<div id='circle_hover'>Click on a ring.</div>" + "<button id='back'>Back to Controls</button>" + "<button id='save'>Save Annulus</button>" + "<button id='grid'>View Saved</button>" + "<form><br><input type='text' id='save_name' /></form>");
+  controls.html(currentHTML + "<div id='circle_hover'>Click on a ring to see the highlighted text.</div>" + "<button id='back'>Back to Controls</button>" + "<button id='save'>Save Annulus</button>" + "<button id='grid'>View Saved</button>" + "<form id='saveform'>To save, enter a name. Please choose only letters and numbers (no spaces): <input type='text' id='save_name' /></form>");
 
   // add event listener which displays the highlighted text under the rings when the specific ring is clicked on
   d3.selectAll("circle").on("mousedown", function(d,i) {
@@ -264,12 +358,17 @@ function displayAnnulus() {
     .attr("id", "svg_control_container");
   });
   document.getElementById("save").addEventListener("click", function() {
+      d3.select("#saveform").style("opacity", 1);
       var name = d3.select("#save_name").property("value");
       var newName = true;
       for (var i = 0; i < annulusArray.length; i++) {
         if (annulusArray[i].name === name) newName = false;
       }
-      if (name != "" && newName === true) saveAnnulus(name);
+      if (name != "" && newName === true) {
+          saveAnnulus(name);
+          d3.select("#saveform").style("opacity", 0);
+          $("#save").prop("disabled", true);
+        };
   });
   document.getElementById("grid").addEventListener("click", function () {gridView()});
 }
@@ -361,8 +460,6 @@ function saveAnnulus(name) {
   var currentIndex = annulusArray.length;
   var annulus = new Annulus(currentCircleArray, name, currentIndex);
   annulusArray.push(annulus);
-  console.log(annulus);
-  console.log(annulusArray);
 }
 
 function recreateAnnulus(center) {
@@ -379,9 +476,11 @@ function recreateAnnulus(center) {
 }
 
 function gridView() {
-  var body = d3.select("body");
+  var body = d3.select("#text_container");
   var storeHTML = body.html();
   body.html("");
+  d3.select("#control_container").style("border-left", "none");
+  d3.select("#svg_container").html("");
 
   var numAnnulus = annulusArray.length;
   var width;
@@ -393,19 +492,27 @@ function gridView() {
   grid_svg = body.append("svg")
     .attr("id", "grid_svg")
     .attr("width", "1000%")
-    .attr("height", "1000px");
+    .attr("height", "550px");
 
   var center = width / 2;
 
   for (var i = 0; i < annulusArray.length; i++) {
       annulusArray[i].draw(center);
-      center += width;
+      grid_svg.append("text")
+      .html(annulusArray[i].name)
+      .attr("x", center - width / 4)
+      .attr("y", 350)
+      .attr("class", "annulusName");
+      center += width / 1.2;
   }
 
   body.append("div")
-  .html("<button id='back'>Back to Controls</button>");
+  .html("<button id='back'>Back</button>");
 
   document.getElementById("back").addEventListener("click", function() {
         body.html(storeHTML);
-      }, function () {highlightEventListeners();  })
+        d3.select("#control_container").style("border-left", "1px solid #5cd65c");
+        document.getElementById("sidenote" + current_index).addEventListener("click", function(){
+          removeThisHighlight(this_index, spanID);});
+      });
 }
