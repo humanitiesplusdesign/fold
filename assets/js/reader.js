@@ -259,6 +259,11 @@ function partitionListeners() {
 function continueToHighlighting() {
   newInstructions();
   $("body").off();
+  $("body").on("keydown", function() {
+    if (event.which === 17) {
+      console.log(heirarchy.tree);
+    }
+  })
 }
 
 // sets up highlighting abilities and category/color selection
@@ -328,10 +333,6 @@ function returnEventListener() {
             partitionListeners();
         }
     }
-
-      $("body").on("click", function() {
-        console.log(getCaretPos(document.getElementById("text_container")))
-      })
     });
   }
 
@@ -403,7 +404,17 @@ function showCategoriesOfSection(section) {
 //to do
 function deleteCategoryOfSection(section, category) {
     section.categories.remove(category);
+    for (var i = 0; i < 2; i++) {
+      var spliceCount = 0;
+      for (var j = 0; j < section.segments.length; j++) {
+        if (section.segments[j - spliceCount].category ==  category) {
+          section.segments.splice(j - spliceCount, 1);
+          spliceCount++;
+        }
+      }
+    }
     showCategoriesOfSection(section);
+    updateHeirarchyDisplay();
 }
 
 function highlight() {
@@ -482,6 +493,13 @@ function removeThisHighlight(number, spanID) {
     for (var i = 0; i < jsonDB.length; i++) {
         if (jsonDB[i].index == number) jsonDB.splice(i, 1);
     }
+
+    for (var i = 0; i < activeSection.segments.length; i++) {
+        if ($("#" + spanID).contents() == activeSection.segments[i].text) {
+          activeSection.segments.splice(i, 1);
+        }
+    }
+    updateHeirarchyDisplay();
 }
 
 //to do: remove .html, turn into
@@ -519,8 +537,7 @@ function displayAnnulus() {
     //back button resets html to newisntructions and re-adds event listeners
     controls.html(storeHTML);
     highlightEventListeners();
-    d3.select("#control_container").append("svg")
-    .attr("id", "svg_control_container");
+    showCategoriesOfSection(activeSection);
   });
   document.getElementById("save").addEventListener("click", function() {
       d3.select("#saveform").style("opacity", 1);
@@ -677,7 +694,5 @@ function gridView() {
   document.getElementById("back").addEventListener("click", function() {
         body.html(storeHTML);
         d3.select("#control_container").style("border-left", "1px solid #5cd65c");
-        document.getElementById("sidenote" + current_index).addEventListener("click", function(){
-          removeThisHighlight(this_index, spanID);});
       });
 }
