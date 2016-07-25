@@ -13,18 +13,22 @@
 
 <body>
   <div id="title"><div id="name"><a href="reader.html">Annulus Reader</a></div><div id="subtitle">a data visualization experiment</div></div>
-<div id="text_container_before"></div>
+  <div id="tableOfContents"></div>
+  <div id="text_container_before"></div>
   <div id="control_container_before">
-    <p id="instructions1" class="instructions">Upload a .txt or .html file. If you are using a .doc or .docx file, please use Microsoft Word's "Save as" and save your document as a web page. If your document is not displaying correctly, use the advanced options under "Save as" to ensure that your encoding is UTF-8.</p>
+    <div id="instructions1" class="instructions">Upload a .txt or .html file. If you are using a .doc or .docx file, please use Microsoft Word's "Save as" and save your document as a web page. If your document is not displaying correctly, use the advanced options under "Save as" to ensure that your encoding is UTF-8.</div>
     <input type="file" id="fileupload"/><br>
-    <p id="instructions2" class="instructions">Now highlight a selection of the displayed text with your cursor.
-      Click "Make Selection" to isolate your selection, "Undo" to reselect from the uploaded text, or "Confirm" to continue. <br>
-      <button id="makeSelection" type="button">Make Selection</button>
-      <button id="undoSelection" type="button">Undo</button>
-      <button id="confirmSelection" type="button">Confirm </button></p>
+    <div id="instructions2" class="instructions">Now partition your document. Click at any point in the text and hit return twice to create a partition. If you
+      do not wish to create any more partitions, click Continue. <br>
+      <button id="continueToSections" type="button">Continue</button></div>
 
-      <div id="instructions3">
-        <p>Input your categories and choose a corresponding color for each category. To select a highlight color, click on the button next to the desired category</p>
+      <div id="instructions2-5" class="instructions">Now create sections in your partitions. Click at any point in the text and hit return twice to create a section. If you
+        do not wish to create any more sections, click Continue. <br>
+        <button id="continueToHighlighting" type="button">Continue</button></div>
+
+      <div id="instructions3" class="instructions">
+        <p>Input your categories and choose a corresponding color for each category. Select a piece of text and click 1, 2, or 3 to highlight. To delete a category and its color,
+        click on the circle next to the color. To delete a particular highlight, click on that highlight.</p>
           <button id='highlight'>Highlight</button> <button id='annulus'>Annulus</button> <p id='color_controls'>
             <form>
             Create Category: <input type='text' id='categoryH'><br>Choose Highlight Color: <input type='text' id='colorH'>
