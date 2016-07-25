@@ -1,11 +1,3 @@
-// To-do:
-//implement paragraph separation logic
-// get bottom of bounding rectangle of first highlight, set top of next to that, repeat
-//clean up grid view, fix callback for event listeners, add names , make the save function more usable
-
-// Get rid of all .html except for table and initial loading of document:; change to all on page, hide with display:none until relevant
-
-// partitions = heirarchy[i]
 var exampleheirarchy = {
   "tree": [
     // sections = heirarchy[i].sections
@@ -45,72 +37,6 @@ var heirarchy = {
   "circleArray": []
 }
 
-function updateHeirarchyDisplay() {
-    var table = createTable();
-    d3.select("#tableOfContents").html(table);
-    createTableEventListeners();
-}
-
-function createTable() {
-    var currentTable = "<div id='tableOfContents'>";
-    var currentLength = heirarchy.tree.length;
-    for (var i = 0; i < currentLength; i++) {
-      var id = heirarchy.tree[i].id;
-      if (id == "") {
-        id = "Part" + (i + 1) ;
-      heirarchy.tree[i].id = id;
-      }
-
-      currentTable += "<h1 id='" + id + "'>" + id + "</h1><br>";
-      for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
-        var topic = (heirarchy.tree[i].sections.topic == "") ? heirarchy.tree[i].sections.topic : "Section" + (j + 1);
-
-        currentTable += "<h2 id='" + id + topic + j + "'>" + topic + "</h2><br>";
-      }
-    }
-    currentTable += "</div>";
-    return currentTable;
-}
-
-function createTableEventListeners() {
-    for (var i = 0; i < heirarchy.tree.length; i++) {
-      console.log(heirarchy);
-      var id = heirarchy.tree[i].id;
-      document.getElementById(id).addEventListener("click", function(id) {
-        displayThisSection(id);
-      });
-      for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
-        var topic = (heirarchy.tree[i].sections.topic === "") ? heirarchy.tree[i].sections.topic : "Section" + (j + 1);
-        var sectionId = id + topic + j;
-        document.getElementById(sectionId).addEventListener("click", function(sectionId) {
-          displayThisSection(sectionId);
-      })
-    }
-  }
-}
-
-function displayThisSection(id) {
-//    d3.selectAll(".section").style("display", "none")
-//    d3.select("#" + id).style("display", "visible");
-      console.log("we done clicked");
-}
-
-function createPartition(caretPos) {
-  // find caret position: http://jsfiddle.net/TjXEG/1/
-  var currentLength = heirarchy.tree.length;
-  heirarchy.tree.push({
-    "id": "",
-    "text": heirarchy.tree[currentLength - 1].text.substring(caretPos, heirarchy.tree[currentLength - 1].text.length),
-    "sections": []
-  });
-  heirarchy.tree[currentLength - 1].text = heirarchy.tree[currentLength - 1].text.substring(0, caretPos);
-
-}
-
-function createSection() {
-  //do something similar to createPartition
-}
-
 var result;
 var svg_width = 400;
 var reader_svg;
@@ -126,12 +52,13 @@ var current_index = 1;
 var jsonDB = [];
 var annulusArray = [];
 var currentCircleArray = [];
+var dblReturnNext = false;
+var partitioning = true;
+var currentPartition = "";
+var activeSection = "";
 
-// add necessary event listeners
-document.getElementById("makeSelection").addEventListener("click", function(){makeSelection()});
-document.getElementById("undoSelection").addEventListener("click", function(){undoSelection()});
-document.getElementById("confirmSelection").addEventListener("click", function(){confirmSelection()});
-
+document.getElementById("continueToSections").addEventListener("click", function(){continueToSections()});
+document.getElementById("continueToHighlighting").addEventListener("click", function(){continueToHighlighting()});
 //reads the file uploaded and displays to the left
 window.onload = function() {
   var fileupload = document.getElementById('fileupload');
@@ -146,6 +73,142 @@ window.onload = function() {
     });
 }
 
+function updateHeirarchyDisplay() {
+    d3.select("#tableOfContents").html("");
+    appendTable();
+    //d3.select("#tableOfContents").html(table);
+    //createTableEventListeners();
+}
+
+function appendTable() {
+    var currentTable = d3.select("#tableOfContents")
+    var currentLength = heirarchy.tree.length;
+    for (var i = 0; i < currentLength; i++) {
+      var id = heirarchy.tree[i].id;
+      if (id == "") {
+        id = "Part" + (i + 1) ;
+      heirarchy.tree[i].id = id;
+      }
+
+      currentTable.append("div")
+        .attr("id", "partition" + i)
+        .html("<h1 id='" + id + "'>" + id + "</h1>");
+
+          (function() {
+            var i1 = i;
+              document.getElementById(id).addEventListener("click", function(){
+                console.log(i1)
+                displayThisPartition(i1);
+              });
+          })();
+      for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+        var topic = (heirarchy.tree[i].sections.topic == "") ? heirarchy.tree[i].sections.topic : "Section" + (j + 1);
+
+        d3.select("#" + "partition" + i).append("div")
+          .attr("id", id + topic + j)
+          .html("<h2>" + topic + "</h2>");
+
+          (function() {
+            var i1 = i;
+            var j1 = j;
+              document.getElementById(id + topic + j).addEventListener("click", function(){
+                displayThisSection(i1, j1);
+              });
+              document.getElementById(id + topic + j).addEventListener("mouseenter", function(){
+                d3.select("#text-div-" + i + "-section-" + j).style("font-weight", "bold")
+              });
+              document.getElementById(id + topic + j).addEventListener("mouseout", function(){
+                d3.select("#text-div-" + i + "-section-" + j).style("font-weight", "normal")
+              });
+          })();
+
+          for (var k = 0; k < heirarchy.tree[i].sections[j].segments.length; k++) {
+            d3.select("#" + id + topic + j).append("div")
+              .text(heirarchy.tree[i].sections[j].segments[k].text)
+              .style("color", heirarchy.tree[i].sections[j].segments[k].color)
+              .style("font-size", "10px")
+              .style("margin", "1px");
+          }
+
+      }
+    }
+
+}
+
+function displayThisSection(i, j) {
+    d3.selectAll(".section").style("display", "none");
+    d3.select("#text-div-" + i + "-section-" + j).style("display", "block");
+    activeSection = heirarchy.tree[i].sections[j];
+    showCategoriesOfSection(activeSection);
+}
+
+function displayThisPartition(i) {
+    d3.selectAll(".section").style("display", "none");
+    for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+      d3.select("#text-div-" + i + "-section-" + j).style("display", "block");
+    }
+    console.log("showing all of " + i);
+}
+
+//based off of http://jsfiddle.net/TjXEG/1/
+function getCaretPos(element) {
+  var caretPos = 0;
+        var range = window.getSelection().getRangeAt(0);
+        var preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(element);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        caretPos = preCaretRange.toString().length;
+  return caretPos
+}
+
+function createPartition(caretPos) {
+  var currentLength = heirarchy.tree.length;
+  for (var i = 0; i < currentLength; i++) {
+    if (i != 0) caretPos -= heirarchy.tree[i - 1].text.length;
+  }
+  heirarchy.tree.push({
+    "id": "",
+    "text": heirarchy.tree[currentLength - 1].text.substring(caretPos, heirarchy.tree[currentLength - 1].text.length),
+    "sections": [
+      {
+        "topic": "",
+        "text": heirarchy.tree[currentLength - 1].text.substring(caretPos, heirarchy.tree[currentLength - 1].text.length),
+        "segments": [],
+        "categories": d3.map()
+      }
+      ]
+    });
+  heirarchy.tree[currentLength - 1].text = heirarchy.tree[currentLength - 1].text.substring(0, caretPos);
+  heirarchy.tree[currentLength - 1].sections[0].text = heirarchy.tree[currentLength - 1].text;
+}
+
+function createSection(caretPos, element) {
+  var i = +element.id.split("-")[2];
+  var currentSectionsLength = heirarchy.tree[i].sections.length;
+
+  for (var j = 0; j < i; j++) {
+      caretPos -= heirarchy.tree[j].text.length;
+  }
+
+  for (var j = 0; j < currentSectionsLength - 1; j++) {
+      caretPos -= heirarchy.tree[i].sections[j].text.length;
+  }
+
+  var lastSection = heirarchy.tree[i].sections[currentSectionsLength - 1];
+
+  heirarchy.tree[i].sections.push(
+    {
+      "topic": "",
+      "text": lastSection.text.substring(caretPos),
+      "segments": [],
+      "categories": d3.map()
+    }
+  );
+  lastSection.text = lastSection.text.substring(0, caretPos);
+  }
+
+
+
 function encodeForWord(text) {
     return decodeURIComponent(encodeURIComponent(text));
 }
@@ -155,81 +218,132 @@ function displayText(result) {
       d3.select("#control_container_before").attr("id", "control_container");
       d3.select("#text_container_before").attr("id", "text_container");
 
-      d3.select("#text_container").html(result).style("opacity", 1);
+      d3.select("#text_container").html(result).style("opacity", 1).style("contenteditable", "true");
       d3.select("#instructions1").style("display", "none");
       d3.select("#instructions2").style("display", "block");
-
+      returnEventListener();
       heirarchy.tree.push({
         "id": "",
         "text": result,
-        "sections": []
+        "sections": [
+            {
+              "topic": "",
+              "text": "result",
+              "segments": [],
+              "categories": d3.map()
+            }
+          ]
       })
 }
 
-//to be deleted
-function makeSelection() {
-  // get highlighted text
-  var selectedText = "";
-  if (window.getSelection) {
-    //selectedText = window.getSelection().toString();
-    selectedText = window.getSelection().getRangeAt(0);
+function continueToSections() {
+  partitioning = false;
+  d3.select("#instructions1").style("display", "none");
+  d3.select("#instructions2").style("display", "none");
+  d3.select("#instructions2-5").style("display", "block");
+  partitionListeners();
+
+}
+
+function partitionListeners() {
+  for (var i = 0; i < heirarchy.tree.length; i++) {
+    document.getElementById("text-div-" + i).removeEventListener("click", function() {
+      currentPartition = this;
+    });
+    document.getElementById("text-div-" + i).addEventListener("click", function() {
+      currentPartition = this;
+    });
   }
-  // get general area of selected text
-  oRange = window.getSelection().getRangeAt(0); //get the text range
-  oRect = oRange.getBoundingClientRect();
-  console.log(oRect);
-  console.log(oRect.left);
-
-  //remove any previous selection div
-  d3.select("#selection").remove();
-
-  // add new selection div
-
-  d3.select("body").append("div")
-    .attr("id", "selection")
-    .html(selectedText)
-    .style("left", oRect.left + "px")
-    .style("top", oRect.top + + window.scrollY + "px")
-    .style("width", oRect.width + "px")
-    .style("height", oRect.height + "px");
-  d3.select("#text_container").style("opacity", 0);
-  d3.select("#selection").style("opacity", .85);
-
-}
-//to be deleted
-function undoSelection() {
-  d3.select("#text_container").style("opacity", 1);
-    d3.select("#selection").remove();
 }
 
-//to be deleted
-function confirmSelection() {
-    d3.select("#text_container").html(d3.select("#selection").html());
-    d3.select("#text_container").style("opacity", 1);
-
-    d3.select("#selection").remove();
-    newInstructions();
-    updateHeirarchyDisplay();
+function continueToHighlighting() {
+  newInstructions();
+  $("body").off();
 }
 
 // sets up highlighting abilities and category/color selection
 function newInstructions() {
-  d3.select("#instructions1").style("display", "none");
-  d3.select("#instructions2").style("display", "none");
+  d3.select("#instructions2-5").style("display", "none");
   d3.select("#instructions3").style("display", "block");
 
   highlightEventListeners();
+
   d3.select("#control_container").append("svg")
   .attr("id", "svg_control_container");
 }
 
+
+function returnEventListener() {
+  $("body").on("keydown", function(e){
+    if (e.which == 16) {
+      console.log(heirarchy.tree);
+    }
+    // partitions
+    if (partitioning) {
+      if (e.which == 13 && !dblReturnNext) {
+          dblReturnNext = true;
+      } else if (e.which == 13 && dblReturnNext) {
+        // create the partition
+          var caretpos = getCaretPos(document.getElementById("text_container"));
+          createPartition(caretpos);
+          dblReturnNext = false;
+          updateHeirarchyDisplay();
+          d3.select("#text_container").html("")
+
+          // create separate divs for each partition
+          for (var i = 0; i < heirarchy.tree.length; i++) {
+            d3.select("#text_container").append("div")
+              .attr("id", "text-div-" + i)
+              .attr("class", "partition")
+              .html(heirarchy.tree[i].text);
+          }
+      }
+    } else {
+
+      if (e.which == 13 && !dblReturnNext) {
+          //displayDblReturnNote();
+          dblReturnNext = true;
+        } else if (e.which == 13 && dblReturnNext) {
+            dblReturnNext = false;
+            var caretpos = getCaretPos(document.getElementById("text_container"));
+            createSection(caretpos, currentPartition);
+            updateHeirarchyDisplay();
+            d3.select("#text_container").html("")
+
+            //use data from heirarchy to add divs containing divs, representing partitions and sections
+            for (var i = 0; i < heirarchy.tree.length; i++) {
+              d3.select("#text_container").append("div")
+                .attr("id", "text-div-" + i)
+                .attr("class", "partition");
+
+
+                for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+                    d3.select("#text-div-" + i).append("div")
+                      .attr("id", "text-div-" + i + "-section-" + j)
+                      .attr("class", "section")
+                      .html(heirarchy.tree[i].sections[j].text);
+                }
+
+            }
+            partitionListeners();
+        }
+    }
+
+      $("body").on("click", function() {
+        console.log(getCaretPos(document.getElementById("text_container")))
+      })
+    });
+  }
+
+
+
 //only call when these buttons exist
 function highlightEventListeners() {
-  document.getElementById("sub").addEventListener("click", function(){addNewCategory()});
+  document.getElementById("sub").addEventListener("click", function(){addNewCategoryToSection(activeSection)});
   document.getElementById("highlight").addEventListener("click", function(){highlight()});
   document.getElementById("annulus").addEventListener("click", function(){
-  //  displayAnnulus();
-  separateIntoColumns();
+    displayAnnulus();
+  //separateIntoColumns();
   });
   document.body.onkeyup = function(e){
     if (window.getSelection().toString() != "") {
@@ -250,15 +364,25 @@ function highlightEventListeners() {
 }
 
 // adds a new category with corresponding color for highlighting
-function addNewCategory() {
+function addNewCategoryToSection(section) {
   var colorH = d3.select("#colorH").property("value");
   var categoryH = d3.select("#categoryH").property("value");
 
-  colorMap.set(categoryH, colorH);
+  section.categories.set(categoryH, colorH);
+  showCategoriesOfSection(section);
+}
+
+function showCategoriesOfSection(section) {
+  d3.select("#current_colors").html("");
+  d3.select("#svg_control_container").html("");
+  if (section === "") {
+    console.log("no active section");
+    return;
+  }
   var controlsHTML = "";
   var position = 15;
   var index = 1;
-  colorMap.forEach(function (key, value) {
+  section.categories.forEach(function (key, value) {
     var thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + index + " value=" + key + ">" + "</p>";
     controlsHTML += thisControl;
     d3.select("#current_colors").html(controlsHTML);
@@ -267,21 +391,25 @@ function addNewCategory() {
       .attr("fill", value)
       .attr("r", 10)
       .attr("cx", 20)
-      .attr("cy", position);
+      .attr("cy", position)
+      .on("click", function() {
+          deleteCategoryOfSection(section, key);
+      });
     position += 60;
     index += 1;
   });
 }
 
 //to do
-function deleteCategory() {
-
+function deleteCategoryOfSection(section, category) {
+    section.categories.remove(category);
+    showCategoriesOfSection(section);
 }
 
 function highlight() {
   // update the category and color used for highlighting rn
   current_category.category = $('input[name=color]:checked').val();
-  current_category.color = colorMap.get($('input[name=color]:checked').val());
+  current_category.color = activeSection.categories.get($('input[name=color]:checked').val());
 
     // get the selected text, put a span with appropriate id around it
     var sel = window.getSelection();
@@ -298,17 +426,9 @@ function highlight() {
     oRect = oRange.getBoundingClientRect();
 
     var placement = oRect.top + window.scrollY;
-    //create text bubble to the left
-    d3.select("#text_container").append("div")
-      .attr("class", "sidenote")
-      .attr("id", "sidenote" + current_index)
-      .style("color", current_category.color)
-      .html("<p>" + current_category.category + "</p>")
-      .style("top", placement + "px");
-
     var this_index = current_index;
 
-    document.getElementById("sidenote" + current_index).addEventListener("click", function(){
+    document.getElementById(spanID).addEventListener("click", function(){
       removeThisHighlight(this_index, spanID);});
     // update the array for building rings
     var segment = {
@@ -321,6 +441,9 @@ function highlight() {
       };
     jsonDB.push(segment);
     current_index += 1;
+
+    activeSection.segments.push(segment);
+    updateHeirarchyDisplay();
 }
 
 function separateIntoColumns() {
@@ -346,7 +469,6 @@ function separateIntoColumns() {
       .style("border-left", "1px solid " + jsonDB[i].color);
 
       top = document.getElementById("column_text_" + i).getBoundingClientRect().bottom;
-      console.log(top);
   }
 
 }
@@ -385,7 +507,6 @@ function displayAnnulus() {
   // add event listener which displays the highlighted text under the rings when the specific ring is clicked on
   d3.selectAll("circle").on("mousedown", function(d,i) {
     var index = this.id.substring(6, 8);
-    console.log(index);
     if (isNaN(index)) {index = +index.charAt(0);}
     index = +index - 1;
     var text = jsonDB[i].text;
