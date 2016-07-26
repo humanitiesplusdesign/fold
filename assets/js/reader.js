@@ -1,4 +1,18 @@
-var exampleheirarchy = {
+/*
+
+To do:
+Fix bug where skipping partioning messes up event listeners
+  // skipping sections also messes up
+Allow partitioning/sectioning to be done out of order
+Clean up delete category - make it clear all of the spans, this will probably require slight rewrite of highlighting
+    somehow record order in text of highglights so that they appear not in order of drawing but in order of appearance (check how you did this for annulus)
+
+make each annulus be only for one sections
+
+make tree id and section topics editables
+*/
+
+  var exampleheirarchy = {
   "tree": [
     // sections = heirarchy[i].sections
     // partition name = heirarchy[i].id
@@ -34,7 +48,8 @@ var heirarchy = {
   //    ]
 //    }
   ],
-  "circleArray": []
+  "circleArray": [],
+  "categories": d3.map()
 }
 
 var result;
@@ -73,11 +88,10 @@ window.onload = function() {
     });
 }
 
+// updates the index/table on the lefthand side
 function updateHeirarchyDisplay() {
     d3.select("#tableOfContents").html("");
     appendTable();
-    //d3.select("#tableOfContents").html(table);
-    //createTableEventListeners();
 }
 
 function appendTable() {
@@ -90,10 +104,11 @@ function appendTable() {
       heirarchy.tree[i].id = id;
       }
 
+      // creates div for each partition
       currentTable.append("div")
         .attr("id", "partition" + i)
         .html("<h1 id='" + id + "'>" + id + "</h1>");
-
+          // event listener closure
           (function() {
             var i1 = i;
               document.getElementById(id).addEventListener("click", function(){
@@ -101,6 +116,7 @@ function appendTable() {
                 displayThisPartition(i1);
               });
           })();
+      //add a div for each section, named based on topic if there is a topic
       for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
         var topic = (heirarchy.tree[i].sections.topic == "") ? heirarchy.tree[i].sections.topic : "Section" + (j + 1);
 
@@ -114,27 +130,22 @@ function appendTable() {
               document.getElementById(id + topic + j).addEventListener("click", function(){
                 displayThisSection(i1, j1);
               });
-              document.getElementById(id + topic + j).addEventListener("mouseenter", function(){
-                d3.select("#text-div-" + i + "-section-" + j).style("font-weight", "bold")
-              });
-              document.getElementById(id + topic + j).addEventListener("mouseout", function(){
-                d3.select("#text-div-" + i + "-section-" + j).style("font-weight", "normal")
-              });
           })();
 
+          //append  a div with a fragment of each highlighted segment in each secion
           for (var k = 0; k < heirarchy.tree[i].sections[j].segments.length; k++) {
             d3.select("#" + id + topic + j).append("div")
-              .text(heirarchy.tree[i].sections[j].segments[k].text)
+              .text(heirarchy.tree[i].sections[j].segments[k].text.substring(0, 20))
               .style("color", heirarchy.tree[i].sections[j].segments[k].color)
               .style("font-size", "10px")
               .style("margin", "1px");
           }
-
       }
     }
 
 }
 
+// set every section to display:none and set the relevant section to display:block
 function displayThisSection(i, j) {
     d3.selectAll(".section").style("display", "none");
     d3.select("#text-div-" + i + "-section-" + j).style("display", "block");
@@ -142,12 +153,13 @@ function displayThisSection(i, j) {
     showCategoriesOfSection(activeSection);
 }
 
+// displays every section in this partition, sets active section to first section in partition
 function displayThisPartition(i) {
     d3.selectAll(".section").style("display", "none");
     for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
       d3.select("#text-div-" + i + "-section-" + j).style("display", "block");
     }
-    console.log("showing all of " + i);
+    activeSection = heirarchy.tree[i].sections[0];
 }
 
 //based off of http://jsfiddle.net/TjXEG/1/
@@ -161,11 +173,14 @@ function getCaretPos(element) {
   return caretPos
 }
 
+// separates text into two partitions at caret position
 function createPartition(caretPos) {
   var currentLength = heirarchy.tree.length;
+
   for (var i = 0; i < currentLength; i++) {
     if (i != 0) caretPos -= heirarchy.tree[i - 1].text.length;
   }
+  // push partition into tree
   heirarchy.tree.push({
     "id": "",
     "text": heirarchy.tree[currentLength - 1].text.substring(caretPos, heirarchy.tree[currentLength - 1].text.length),
@@ -178,10 +193,12 @@ function createPartition(caretPos) {
       }
       ]
     });
+  //appropriately change previous partitions and partition sections
   heirarchy.tree[currentLength - 1].text = heirarchy.tree[currentLength - 1].text.substring(0, caretPos);
   heirarchy.tree[currentLength - 1].sections[0].text = heirarchy.tree[currentLength - 1].text;
 }
 
+//seaprates partition into sections at caret position
 function createSection(caretPos, element) {
   var i = +element.id.split("-")[2];
   var currentSectionsLength = heirarchy.tree[i].sections.length;
@@ -222,6 +239,7 @@ function displayText(result) {
       d3.select("#instructions1").style("display", "none");
       d3.select("#instructions2").style("display", "block");
       returnEventListener();
+      // creates initial partition containing entire uploaded document
       heirarchy.tree.push({
         "id": "",
         "text": result,
@@ -271,7 +289,29 @@ function newInstructions() {
   d3.select("#instructions2-5").style("display", "none");
   d3.select("#instructions3").style("display", "block");
 
+  activeSection = heirarchy.tree[0].section[0];
+  displayThisSection(activeSection);
   highlightEventListeners();
+  document.getElementById("back").addEventListener("click", function() {
+    d3.select("#annulus-display").style("display", "none");
+    d3.select("#instructions3").style("display", "block");
+    d3.select("#svg_control_container").style("display", "block");
+    reader_svg.remove();
+  });
+  document.getElementById("save").addEventListener("click", function() {
+      d3.select("#saveform").style("opacity", 1);
+      var name = d3.select("#save_name").property("value");
+      var newName = true;
+      for (var i = 0; i < annulusArray.length; i++) {
+        if (annulusArray[i].name === name) newName = false;
+      }
+      if (name != "" && newName === true) {
+          saveAnnulus(name);
+          d3.select("#saveform").style("opacity", 0);
+          $("#save").prop("disabled", true);
+        };
+  });
+  document.getElementById("grid").addEventListener("click", function () {gridView()});
 
   d3.select("#control_container").append("svg")
   .attr("id", "svg_control_container");
@@ -369,21 +409,21 @@ function addNewCategoryToSection(section) {
   var colorH = d3.select("#colorH").property("value");
   var categoryH = d3.select("#categoryH").property("value");
 
-  section.categories.set(categoryH, colorH);
+  heirarchy.categories.set(categoryH, colorH);
   showCategoriesOfSection(section);
 }
 
 function showCategoriesOfSection(section) {
   d3.select("#current_colors").html("");
   d3.select("#svg_control_container").html("");
-  if (section === "") {
-    console.log("no active section");
-    return;
-  }
+  //if (section === "") {
+  //  console.log("no active section");
+  //  return;
+  //}
   var controlsHTML = "";
   var position = 15;
   var index = 1;
-  section.categories.forEach(function (key, value) {
+  heirarchy.categories.forEach(function (key, value) {
     var thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + index + " value=" + key + ">" + "</p>";
     controlsHTML += thisControl;
     d3.select("#current_colors").html(controlsHTML);
@@ -394,16 +434,29 @@ function showCategoriesOfSection(section) {
       .attr("cx", 20)
       .attr("cy", position)
       .on("click", function() {
-          deleteCategoryOfSection(section, key);
+        heirarchy.categories.remove(key);
+        for (var i = 0; i < heirarchy.tree.length; i++) {
+          for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+            deleteCategoryOfSection(heirarchy.tree[i].sections[j], key);
+          }
+        }
+
+        //removes highlights of this color
+        var spans = d3.selectAll("span");
+        spans.each(function (d,i) {
+          console.log(this.id);
+          if (this.style.backgroundColor == value) $("#" + this.id).contents().unwrap();
+        })
+
+        showCategoriesOfSection(section);
+        updateHeirarchyDisplay();
       });
     position += 60;
     index += 1;
   });
 }
 
-//to do
 function deleteCategoryOfSection(section, category) {
-    section.categories.remove(category);
     for (var i = 0; i < 2; i++) {
       var spliceCount = 0;
       for (var j = 0; j < section.segments.length; j++) {
@@ -413,14 +466,12 @@ function deleteCategoryOfSection(section, category) {
         }
       }
     }
-    showCategoriesOfSection(section);
-    updateHeirarchyDisplay();
 }
 
 function highlight() {
   // update the category and color used for highlighting rn
   current_category.category = $('input[name=color]:checked').val();
-  current_category.color = activeSection.categories.get($('input[name=color]:checked').val());
+  current_category.color = heirarchy.categories.get($('input[name=color]:checked').val());
 
     // get the selected text, put a span with appropriate id around it
     var sel = window.getSelection();
@@ -457,6 +508,7 @@ function highlight() {
     updateHeirarchyDisplay();
 }
 
+// to be finished - based on topic (?)
 function separateIntoColumns() {
   d3.select("#text_container").html("");
   var top = 0;
@@ -488,7 +540,6 @@ function separateIntoColumns() {
 function removeThisHighlight(number, spanID) {
     //remove span, remove side note
     $("#" + spanID).contents().unwrap();
-    d3.select("#sidenote" + number).remove();
     // delete highlight from db
     for (var i = 0; i < jsonDB.length; i++) {
         if (jsonDB[i].index == number) jsonDB.splice(i, 1);
@@ -504,12 +555,15 @@ function removeThisHighlight(number, spanID) {
 
 //to do: remove .html, turn into
 function displayAnnulus() {
-  var controls = d3.select("#control_container");
-  var storeHTML = controls.html();
+//  var controls = d3.select("#control_container");
+//  var storeHTML = controls.html();
 
-  controls.html("");
+//controls.html("");
+  d3.select("#instructions3").style("display", "none");
+  d3.select("#svg_control_container").style("display", "none");
+  d3.select("#annulus-display").style("display", "block");
 
-  reader_svg = controls.append("svg")
+  reader_svg = d3.select("#appendhere").append("svg")
   .attr("id", "svg_container")
   .attr("width", 400)
   .attr("height", 400)
@@ -519,8 +573,8 @@ function displayAnnulus() {
   annulusPrep();
   drawAnnulus();
 
-  var currentHTML = controls.html();
-  controls.html(currentHTML + "<div id='circle_hover'>Click on a ring to see the highlighted text.</div>" + "<button id='back'>Back to Controls</button>" + "<button id='save'>Save Annulus</button>" + "<button id='grid'>View Saved</button>" + "<form id='saveform'>To save, enter a name. Please choose only letters and numbers (no spaces): <input type='text' id='save_name' /></form>");
+  //var currentHTML = controls.html();
+//  controls.html(currentHTML + "<div id='circle_hover'>Click on a ring to see the highlighted text.</div>" + "<button id='back'>Back to Controls</button>" + "<button id='save'>Save Annulus</button>" + "<button id='grid'>View Saved</button>" + "<form id='saveform'>To save, enter a name. Please choose only letters and numbers (no spaces): <input type='text' id='save_name' /></form>");
 
   // add event listener which displays the highlighted text under the rings when the specific ring is clicked on
   d3.selectAll("circle").on("mousedown", function(d,i) {
@@ -533,26 +587,7 @@ function displayAnnulus() {
     }
     d3.select("#circle_hover").html(jsonDB[i].category + " - " + "<span style='background-color: " + jsonDB[i].color + ";'>" + text + "</span>");
   });
-  document.getElementById("back").addEventListener("click", function() {
-    //back button resets html to newisntructions and re-adds event listeners
-    controls.html(storeHTML);
-    highlightEventListeners();
-    showCategoriesOfSection(activeSection);
-  });
-  document.getElementById("save").addEventListener("click", function() {
-      d3.select("#saveform").style("opacity", 1);
-      var name = d3.select("#save_name").property("value");
-      var newName = true;
-      for (var i = 0; i < annulusArray.length; i++) {
-        if (annulusArray[i].name === name) newName = false;
-      }
-      if (name != "" && newName === true) {
-          saveAnnulus(name);
-          d3.select("#saveform").style("opacity", 0);
-          $("#save").prop("disabled", true);
-        };
-  });
-  document.getElementById("grid").addEventListener("click", function () {gridView()});
+
 }
 
 //order the entries in jsonDB based on appearance order in text
@@ -580,6 +615,23 @@ function drawAnnulus() {
       //add to list of current circles in case the annulus needs to be saved
       currentCircleArray.push(ring);
 
+    }
+}
+
+function drawAnnulusOfSection(section) {
+  currentCircleArray = [];
+  var max_radius = svg_width / 2 - 10;
+  var center = svg_width / 2;
+  for (var i = 0; i < section.segments.length; i++) {
+      //draw the ring
+      drawRing(i + 1, section.segments[i].color, section.segments[i].length, section.segments[i].category, section.segments[i].text, max_radius, "current", center);
+      var ring = {
+                    "order": i + 1,
+                    "color": section.segments[i].color,
+                    "category": section.segments[i].category
+                    };
+      //add to list of current circles in case the annulus needs to be saved
+      currentCircleArray.push(ring);
     }
 }
 
