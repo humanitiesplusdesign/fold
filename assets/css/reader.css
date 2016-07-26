@@ -38,6 +38,14 @@ button:hover {
   transition: .08s;
 }
 
+.section {
+  margin-bottom: 10px;
+}
+
+.partition {
+  margin-bottom: 25px;
+}
+
 #name a:hover {
   text-decoration: none;
   color: #5cd65c;
@@ -89,7 +97,7 @@ input {
  #control_container {
   position: fixed;
   width: 500px;
-  margin-left: 820px;
+  margin-left: 830px;
   margin-right: 50px;
   padding: 10px;
   font-family: "News Cycle";
@@ -103,19 +111,6 @@ input {
   color: white;
 }
 
-#selection {
-  position: absolute;
-  background-color: black;
-  color: white;
-  transition: 1s;
-  opacity: 0;
-}
-
-#selection::selection {
-  background-color: white;
-  color: black;
-}
-
 #control_container_before {
   width: 600px;
   padding-top: 20px;
@@ -125,9 +120,17 @@ input {
   text-align: center;
 }
 
+#tableOfContents {
+  width: 100px;
+  height: 500px;
+  float: left;
+  border-right: 1px solid #5cd65c;
+  font-family: "News Cycle";
+  margin-bottom: 5px;
+}
+
 .instructions {
   transition: 2s;
-  opacity: 0;
 }
 
 #instructions1 {
@@ -135,7 +138,23 @@ input {
   opacity: 1;
 }
 
+#instructions2 {
+  display: none;
+}
+
+#instructions2-5 {
+  display: none;
+}
+
 #instructions3 {
+  display: none;
+}
+
+#instructions3 p {
+  margin: 3px;
+}
+
+#annulus-display {
   display: none;
 }
 
@@ -146,14 +165,6 @@ input {
 .highlightSpan::selection {
   color: white;
   background-color: black;
-}
-
-
-.sidenote {
-  left: 740px;
-  position: absolute;
-  cursor: not-allowed;
-  font-family: "News Cycle";
 }
 
 #svg_control_container {
