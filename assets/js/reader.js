@@ -260,10 +260,12 @@ function continueToSections() {
   d3.select("#instructions2-5").style("display", "block");
   partitionListeners();
 
-  d3.select("#text-div-" + 0  ).append("div")
-    .attr("id", "text-div-" + 0 + "-section-" + 0)
-    .attr("class", "section")
-    .html(heirarchy.tree[0].sections[0].text);
+  if (!document.getElementById("text-div-0-section-0")) {
+    d3.select("#text-div-" + 0).html("").append("div")
+      .attr("id", "text-div-" + 0 + "-section-" + 0)
+      .attr("class", "section")
+      .html(heirarchy.tree[0].sections[0].text);
+  }
 }
 
 function partitionListeners() {
@@ -398,15 +400,15 @@ function highlightEventListeners() {
   });
   document.body.onkeyup = function(e){
     if (window.getSelection().toString() != "") {
-        if (e.keyCode == 49 && heirarchy.categories.size() == 1) {
+        if (e.keyCode == 49 && heirarchy.categories.size() > 0) {
           $("#check_" + 1).prop("checked", true);
           highlight();
         }
-        if (e.keyCode == 50 && heirarchy.categories.size() == 2) {
+        if (e.keyCode == 50 && heirarchy.categories.size() > 1) {
           $("#check_" + 2).prop("checked", true);
           highlight();
         }
-        if (e.keyCode == 51 && heirarchy.categories.size() == 3) {
+        if (e.keyCode == 51 && heirarchy.categories.size() > 2) {
           $("#check_" + 3).prop("checked", true);
           highlight();
         }
@@ -563,12 +565,7 @@ function removeThisHighlight(number, spanID) {
     updateHeirarchyDisplay();
 }
 
-//to do: remove .html, turn into
 function displayAnnulus() {
-//  var controls = d3.select("#control_container");
-//  var storeHTML = controls.html();
-
-//controls.html("");
   d3.select("#instructions3").style("display", "none");
   d3.select("#svg_control_container").style("display", "none");
   d3.select("#annulus-display").style("display", "block");
@@ -581,10 +578,8 @@ function displayAnnulus() {
 
   //draw the annulus
   annulusPrep();
-  drawAnnulus();
-
-  //var currentHTML = controls.html();
-//  controls.html(currentHTML + "<div id='circle_hover'>Click on a ring to see the highlighted text.</div>" + "<button id='back'>Back to Controls</button>" + "<button id='save'>Save Annulus</button>" + "<button id='grid'>View Saved</button>" + "<form id='saveform'>To save, enter a name. Please choose only letters and numbers (no spaces): <input type='text' id='save_name' /></form>");
+  annulusPrepForSection(activeSection);
+  drawAnnulusOfSection(activeSection);
 
   // add event listener which displays the highlighted text under the rings when the specific ring is clicked on
   d3.selectAll("circle").on("mousedown", function(d,i) {
@@ -607,6 +602,14 @@ function annulusPrep() {
       if (a.placement < b.placement) return -1;
       return 0;
     })
+}
+
+function annulusPrepForSection(section) {
+      section.segments.sort(function(a, b) {
+        if (a.placement > b.placement) return 1;
+        if (a.placement < b.placement) return -1;
+        return 0;
+      })
 }
 
 //does exactly that
@@ -634,7 +637,7 @@ function drawAnnulusOfSection(section) {
   var center = svg_width / 2;
   for (var i = 0; i < section.segments.length; i++) {
       //draw the ring
-      drawRing(i + 1, section.segments[i].color, section.segments[i].length, section.segments[i].category, section.segments[i].text, max_radius, "current", center);
+      drawRing(i + 1, section.segments[i].color, section.segments.length, section.segments[i].category, section.segments[i].text, max_radius, "current", center);
       var ring = {
                     "order": i + 1,
                     "color": section.segments[i].color,
