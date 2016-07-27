@@ -3,8 +3,7 @@
 To do:
 Fix bug where skipping partioning messes up event listeners
   // skipping sections also messes up
-Allow partitioning/sectioning to be done out of order
-Clean up delete category - make it clear all of the spans, this will probably require slight rewrite of highlighting
+Allow partitioning/sectioning to be done out of order - just add check to see which partition/section the caret is currently in
     somehow record order in text of highglights so that they appear not in order of drawing but in order of appearance (check how you did this for annulus)
 
 make each annulus be only for one sections
@@ -82,7 +81,7 @@ window.onload = function() {
       var reader = new FileReader();
       reader.onload = function(e) {
           result = reader.result;
-          displayText(encodeForWord(result));
+          displayText(result);
       }
       reader.readAsText(file);
     });
@@ -142,7 +141,9 @@ function appendTable() {
           }
       }
     }
-
+    currentTable.append("div")
+      .attr("id", "edit-id")
+      .html("<h4>Edit</h4>");
 }
 
 // set every section to display:none and set the relevant section to display:block
@@ -224,18 +225,16 @@ function createSection(caretPos, element) {
   lastSection.text = lastSection.text.substring(0, caretPos);
   }
 
-
-
-function encodeForWord(text) {
-    return decodeURIComponent(encodeURIComponent(text));
-}
-
 // does exactly that
 function displayText(result) {
       d3.select("#control_container_before").attr("id", "control_container");
       d3.select("#text_container_before").attr("id", "text_container");
 
-      d3.select("#text_container").html(result).style("opacity", 1).style("contenteditable", "true");
+      d3.select("#text_container").style("opacity", 1).append("div")
+        .attr("id", "text-div-" + 0)
+        .attr("class", "partition")
+        .html(result);
+
       d3.select("#instructions1").style("display", "none");
       d3.select("#instructions2").style("display", "block");
       returnEventListener();
@@ -246,7 +245,7 @@ function displayText(result) {
         "sections": [
             {
               "topic": "",
-              "text": "result",
+              "text": result,
               "segments": [],
               "categories": d3.map()
             }
@@ -261,6 +260,10 @@ function continueToSections() {
   d3.select("#instructions2-5").style("display", "block");
   partitionListeners();
 
+  d3.select("#text-div-" + 0  ).append("div")
+    .attr("id", "text-div-" + 0 + "-section-" + 0)
+    .attr("class", "section")
+    .html(heirarchy.tree[0].sections[0].text);
 }
 
 function partitionListeners() {
@@ -289,9 +292,19 @@ function newInstructions() {
   d3.select("#instructions2-5").style("display", "none");
   d3.select("#instructions3").style("display", "block");
 
-  activeSection = heirarchy.tree[0].section[0];
-  displayThisSection(activeSection);
+  activeSection = heirarchy.tree[0].sections[0];
+  displayThisSection(0,0);
+
   highlightEventListeners();
+  annulusDisplayListeners();
+
+  updateHeirarchyDisplay();
+
+  d3.select("#control_container").append("svg")
+  .attr("id", "svg_control_container");
+}
+
+function annulusDisplayListeners() {
   document.getElementById("back").addEventListener("click", function() {
     d3.select("#annulus-display").style("display", "none");
     d3.select("#instructions3").style("display", "block");
@@ -311,10 +324,7 @@ function newInstructions() {
           $("#save").prop("disabled", true);
         };
   });
-  document.getElementById("grid").addEventListener("click", function () {gridView()});
-
-  d3.select("#control_container").append("svg")
-  .attr("id", "svg_control_container");
+  document.getElementById("grid").addEventListener("click", function () {gridView()})
 }
 
 
@@ -388,15 +398,15 @@ function highlightEventListeners() {
   });
   document.body.onkeyup = function(e){
     if (window.getSelection().toString() != "") {
-        if (e.keyCode == 49) {
+        if (e.keyCode == 49 && heirarchy.categories.size() == 1) {
           $("#check_" + 1).prop("checked", true);
           highlight();
         }
-        if (e.keyCode == 50) {
+        if (e.keyCode == 50 && heirarchy.categories.size() == 2) {
           $("#check_" + 2).prop("checked", true);
           highlight();
         }
-        if (e.keyCode == 51) {
+        if (e.keyCode == 51 && heirarchy.categories.size() == 3) {
           $("#check_" + 3).prop("checked", true);
           highlight();
         }
