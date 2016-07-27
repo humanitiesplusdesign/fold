@@ -1,39 +1,17 @@
 /*
 
 To do:
-Fix bug where skipping partioning messes up event listeners
-  // skipping sections also messes up
-Allow partitioning/sectioning to be done out of order - just add check to see which partition/section the caret is currently in
-    somehow record order in text of highglights so that they appear not in order of drawing but in order of appearance (check how you did this for annulus)
+Fix new bug with fonts when skipping partitioning/sectioning
 
-make each annulus be only for one sections
+fix annulus circle click behavior
 
-make tree id and section topics editables
+improve delete behavior
+
+improve edit ui
+
+finish grid view update, column update
 */
 
-  var exampleheirarchy = {
-  "tree": [
-    // sections = heirarchy[i].sections
-    // partition name = heirarchy[i].id
-      {"id": "",
-      "text": "",
-      "sections": [
-        {
-          "topic": "topic1",
-          "text": "",
-          "segments": []
-        },
-        {
-          "topic": "topic2",
-          "text": "",
-          "segments": []
-        }
-      ],
-    }
-    //new partition would start here
-  ],
-  "circleArray": []
-}
 var heirarchy = {
   "tree": [
   //  {"id": "",
@@ -56,11 +34,6 @@ var svg_width = 400;
 var reader_svg;
 var grid_svg = "";
 var colorMap = d3.map();
-var current_category = {
-    "number": 1,
-    "category": "conservative",
-    "color": "red"
-  };
 var current_index = 1;
 // for storing data to generate annulus rings later
 var jsonDB = [];
@@ -111,7 +84,6 @@ function appendTable() {
           (function() {
             var i1 = i;
               document.getElementById(id).addEventListener("click", function(){
-                console.log(i1)
                 displayThisPartition(i1);
               });
           })();
@@ -134,7 +106,7 @@ function appendTable() {
 
           //append  a div with a fragment of each highlighted segment in each secion
           for (var k = 0; k < heirarchy.tree[i].sections[j].segments.length; k++) {
-            d3.select("#" + id + topic + j).append("div")
+            d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j).append("div")
               .text(heirarchy.tree[i].sections[j].segments[k].text.substring(0, 20))
               .style("color", heirarchy.tree[i].sections[j].segments[k].color)
               .style("font-size", "10px")
@@ -159,8 +131,8 @@ function appendTable() {
             for (var i = 0; i < currentLength; i++) {
               for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
                 //if topic is different than text, change topic for section to text
-                if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j).text() != heirarchy.tree[i].sections[j].topic) {
-                  heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j).text();
+                if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2").text() != heirarchy.tree[i].sections[j].topic) {
+                  heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2"  ).text();
                 }
               }
               // if partition name is different than text, change partition name to text
@@ -508,18 +480,17 @@ function deleteCategoryOfSection(section, category) {
 }
 
 function highlight() {
-  // update the category and color used for highlighting rn
-  current_category.category = $('input[name=color]:checked').val();
-  current_category.color = heirarchy.categories.get($('input[name=color]:checked').val());
+  var category = $('input[name=color]:checked').val();
+  var color = heirarchy.categories.get($('input[name=color]:checked').val());
 
     // get the selected text, put a span with appropriate id around it
     var sel = window.getSelection();
     var selText = sel.toString();
     var range = sel.getRangeAt(0);
     var newNode = document.createElement("span");
-    var spanID = current_category.color + current_category.category + current_index;
+    var spanID = color + category + current_index;
     newNode.setAttribute('id', spanID);
-    newNode.setAttribute('style', "background-color: " + current_category.color);
+    newNode.setAttribute('style', "background-color: " + color);
     newNode.setAttribute('class', "highlightSpan");
     range.surroundContents(newNode);
 
@@ -535,8 +506,8 @@ function highlight() {
     var segment = {
         "index": current_index,
         "text":  selText, //contents of line-height
-        "category": current_category.category, //used to determine colors
-        "color": current_category.color, /// unecessary but makes things easier
+        "category": category, //used to determine colors
+        "color": color, /// unecessary but makes things easier
         "placement": placement,
         "comment": "",
       };
@@ -544,6 +515,7 @@ function highlight() {
     current_index += 1;
 
     activeSection.segments.push(segment);
+    annulusPrepForSection(activeSection);
     updateHeirarchyDisplay();
 }
 
@@ -577,7 +549,8 @@ function separateIntoColumns() {
 
 //removes the highlighted text given an index and an id
 function removeThisHighlight(number, spanID) {
-    //remove span, remove side note
+    contents =  $("#" + spanID).contents()[0].data;
+    console.log(contents);
     $("#" + spanID).contents().unwrap();
     // delete highlight from db
     for (var i = 0; i < jsonDB.length; i++) {
@@ -585,7 +558,7 @@ function removeThisHighlight(number, spanID) {
     }
 
     for (var i = 0; i < activeSection.segments.length; i++) {
-        if ($("#" + spanID).contents() == activeSection.segments[i].text) {
+        if (contents == activeSection.segments[i].text) {
           activeSection.segments.splice(i, 1);
         }
     }
@@ -637,6 +610,7 @@ function annulusPrepForSection(section) {
         if (a.placement < b.placement) return -1;
         return 0;
       })
+      console.log(section.segments);
 }
 
 //does exactly that
