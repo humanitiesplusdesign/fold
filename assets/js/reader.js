@@ -117,7 +117,8 @@ function appendTable() {
           })();
       //add a div for each section, named based on topic if there is a topic
       for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
-        var topic = (heirarchy.tree[i].sections.topic == "") ? heirarchy.tree[i].sections.topic : "Section" + (j + 1);
+        var topic = (heirarchy.tree[i].sections[j].topic != "") ? heirarchy.tree[i].sections[j].topic : "Section" + (j + 1);
+        heirarchy.tree[i].sections[j].topic = topic;
 
         d3.select("#" + "partition" + i).append("div")
           .attr("id", id + topic + j)
@@ -143,7 +144,33 @@ function appendTable() {
     }
     currentTable.append("div")
       .attr("id", "edit-id")
-      .html("<h4>Edit</h4>");
+      .html("<h4>Edit</h4>")
+      .on("click", function() {
+
+        currentTable.selectAll("h1, h2, h4").each(function(){
+          d3.select(this).attr("contenteditable", "true");
+            });
+          currentTable.append("div")
+            .html("<h4>Save Names and Topics</h4")
+            .on("click", function() {
+              currentTable.selectAll("h1, h2, h4").each(function() {
+                  d3.select(this).attr("contenteditable", "false");
+            });
+            for (var i = 0; i < currentLength; i++) {
+              for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+                //if topic is different than text, change topic for section to text
+                if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j).text() != heirarchy.tree[i].sections[j].topic) {
+                  heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j).text();
+                }
+              }
+              // if partition name is different than text, change partition name to text
+               if (d3.select("#" + heirarchy.tree[i].id).text() != heirarchy.tree[i].id) {
+                 heirarchy.tree[i].id = d3.select("#" + heirarchy.tree[i].id).text();
+               }
+            }
+            updateHeirarchyDisplay();
+        })
+    })
 }
 
 // set every section to display:none and set the relevant section to display:block
