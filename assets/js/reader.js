@@ -40,23 +40,30 @@ var annulusArray = [];
 var currentCircleArray = [];
 var dblReturnNext = false;
 var partitioning = true;
+var sectioning = true;
 var currentPartition = "";
 var activeSection = "";
+var blinkCursor;
 
-document.getElementById("continueToSections").addEventListener("click", function(){continueToSections()});
-document.getElementById("continueToHighlighting").addEventListener("click", function(){continueToHighlighting()});
-//reads the file uploaded and displays to the left
-window.onload = function() {
-  var fileupload = document.getElementById('fileupload');
-    fileupload.addEventListener('change', function(e) {
-      var file = fileupload.files[0];
-      var reader = new FileReader();
-      reader.onload = function(e) {
-          result = reader.result;
-          displayText(result);
-      }
-      reader.readAsText(file);
-    });
+initializeReader();
+
+function initializeReader() {
+  document.getElementById("continueToSections").addEventListener("click", function(){continueToSections()});
+  document.getElementById("continueToHighlighting").addEventListener("click", function(){continueToHighlighting()});
+
+  //reads the file uploaded and displays to the left
+  window.onload = function() {
+    var fileupload = document.getElementById('fileupload');
+      fileupload.addEventListener('change', function(e) {
+        var file = fileupload.files[0];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            result = reader.result;
+            displayText(result);
+        }
+        reader.readAsText(file);
+      });
+    }
 }
 
 // updates the index/table on the lefthand side
@@ -113,35 +120,37 @@ function appendTable() {
           }
       }
     }
-    currentTable.append("div")
-      .attr("id", "edit-id")
-      .html("<h4>Edit</h4>")
-      .on("click", function() {
-
-        currentTable.selectAll("h1, h2, h4").each(function(){
-          d3.select(this).attr("contenteditable", "true");
-            });
-          currentTable.append("div")
-            .html("<h4>Save Names and Topics</h4")
-            .on("click", function() {
-              currentTable.selectAll("h1, h2, h4").each(function() {
-                  d3.select(this).attr("contenteditable", "false");
-            });
-            for (var i = 0; i < currentLength; i++) {
-              for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
-                //if topic is different than text, change topic for section to text
-                if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2").text() != heirarchy.tree[i].sections[j].topic) {
-                  heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2"  ).text();
+    if (!sectioning) {
+      currentTable.append("div")
+        .attr("id", "edit-id")
+        .html("<h4>Edit</h4>")
+        .on("click", function() {
+          currentTable.selectAll("h1, h2, h4").each(function(){
+            d3.select(this).attr("contenteditable", "true");
+              });
+            currentTable.append("div")
+              .html("<h4>Save Names and Topics</h4")
+              .on("click", function() {
+                currentTable.selectAll("h1, h2, h4").each(function() {
+                    d3.select(this).attr("contenteditable", "false");
+              });
+              for (var i = 0; i < currentLength; i++) {
+                for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+                  //if topic is different than text, change topic for section to text
+                  if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2").text() != heirarchy.tree[i].sections[j].topic) {
+                    heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2"  ).text();
+                  }
                 }
+                // if partition name is different than text, change partition name to text
+                 if (d3.select("#" + heirarchy.tree[i].id).text() != heirarchy.tree[i].id) {
+                   heirarchy.tree[i].id = d3.select("#" + heirarchy.tree[i].id).text();
+                 }
               }
-              // if partition name is different than text, change partition name to text
-               if (d3.select("#" + heirarchy.tree[i].id).text() != heirarchy.tree[i].id) {
-                 heirarchy.tree[i].id = d3.select("#" + heirarchy.tree[i].id).text();
-               }
-            }
-            updateHeirarchyDisplay();
-        })
-    })
+              updateHeirarchyDisplay();
+          })
+      });
+    }
+
 }
 
 // set every section to display:none and set the relevant section to display:block
@@ -235,6 +244,8 @@ function displayText(result) {
 
       d3.select("#instructions1").style("display", "none");
       d3.select("#instructions2").style("display", "block");
+
+      setupBlinkCursor();
       returnEventListener();
       // creates initial partition containing entire uploaded document
       heirarchy.tree.push({
@@ -279,9 +290,11 @@ function partitionListeners() {
 
 function continueToHighlighting() {
   newInstructions();
+  sectioning = false;
   $("body").off();
   $("body").on("keydown", function() {
     if (event.which === 17) {
+      //testing
       console.log(heirarchy.tree);
     }
   })
@@ -327,12 +340,17 @@ function annulusDisplayListeners() {
   document.getElementById("grid").addEventListener("click", function () {gridView()})
 }
 
-
 function returnEventListener() {
+  $("body").on("click", function(e) {
+    if (dblReturnNext) dblReturnNext = false;
+
+
+    blinkCursor.style("top", event.y - 20 + $('body').scrollTop() + "px")
+    .style("left", event.x + "px")
+    .style("visibility", "visible");
+  })
+
   $("body").on("keydown", function(e){
-    if (e.which == 16) {
-      console.log(heirarchy.tree);
-    }
     // partitions
     if (partitioning) {
       if (e.which == 13 && !dblReturnNext) {
@@ -344,7 +362,7 @@ function returnEventListener() {
           dblReturnNext = false;
           updateHeirarchyDisplay();
           d3.select("#text_container").html("")
-
+          setupBlinkCursor();
           // create separate divs for each partition
           for (var i = 0; i < heirarchy.tree.length; i++) {
             d3.select("#text_container").append("div")
@@ -352,18 +370,18 @@ function returnEventListener() {
               .attr("class", "partition")
               .html(heirarchy.tree[i].text);
           }
-      }
+      } else if (dblReturnNext) dblReturnNext = false;
     } else {
 
       if (e.which == 13 && !dblReturnNext) {
-          //displayDblReturnNote();
           dblReturnNext = true;
         } else if (e.which == 13 && dblReturnNext) {
             dblReturnNext = false;
             var caretpos = getCaretPos(document.getElementById("text_container"));
             createSection(caretpos, currentPartition);
             updateHeirarchyDisplay();
-            d3.select("#text_container").html("")
+            d3.select("#text_container").html("");
+            setupBlinkCursor();
 
             //use data from heirarchy to add divs containing divs, representing partitions and sections
             for (var i = 0; i < heirarchy.tree.length; i++) {
@@ -426,10 +444,7 @@ function addNewCategoryToSection(section) {
 function showCategoriesOfSection(section) {
   d3.select("#current_colors").html("");
   d3.select("#svg_control_container").html("");
-  //if (section === "") {
-  //  console.log("no active section");
-  //  return;
-  //}
+
   var controlsHTML = "";
   var position = 15;
   var index = 1;
@@ -454,7 +469,6 @@ function showCategoriesOfSection(section) {
         //removes highlights of this color
         var spans = d3.selectAll("span");
         spans.each(function (d,i) {
-          console.log(this.id);
           if (this.style.backgroundColor == value) $("#" + this.id).contents().unwrap();
         })
 
@@ -593,7 +607,6 @@ function annulusPrepForSection(section) {
         if (a.placement < b.placement) return -1;
         return 0;
       })
-      console.log(section.segments);
 }
 
 function drawAnnulusOfSection(section) {
@@ -726,4 +739,12 @@ function gridView() {
         body.html(storeHTML);
         d3.select("#control_container").style("border-left", "1px solid #5cd65c");
       });
+}
+
+function setupBlinkCursor() {
+    blinkCursor = d3.select("#text_container").append("span")
+      .attr("id", "blink")
+      .text("|")
+      .style("visibility", "hidden")
+      .style("position", "absolute");
 }

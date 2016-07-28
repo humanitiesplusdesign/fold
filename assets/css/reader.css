@@ -13,6 +13,23 @@ button:hover {
   background-color:
 }
 
+#blink {
+  animation: 1s blink step-end infinite;
+  font-weight: 100;
+  font-size: 30px;
+  color: #2E3D48;
+  width: 2px;
+}
+
+@keyframes blink {
+  from, to {
+    color: transparent;
+  }
+  50% {
+    color: black;
+  }
+}
+
 #title {
   width: 100%;
   text-align: center;
