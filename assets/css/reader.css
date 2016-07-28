@@ -132,13 +132,10 @@ input {
   margin-bottom: 5px;
 }
 
-<<<<<<< HEAD
 #tableOfContents h1:hover, h2:hover, h4:hover {
   cursor: pointer;
 }
 
-=======
->>>>>>> origin/master
 .instructions {
   transition: 2s;
 }
