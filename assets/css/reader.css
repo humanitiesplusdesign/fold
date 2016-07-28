@@ -77,21 +77,23 @@ input {
 
 #text_container_before {
   float: left;
-  margin-left: 50px;
+  margin-left: 20px;
   margin-top: 20px;
   padding: 20px;
   transition: 1s;
   opacity: 0;
+  font-family: "Roboto";
 }
 
 #text_container {
   width: 650px;
   float: left;
-  margin-left: 50px;
+  margin-left: 20px;
   margin-top: 20px;
   padding: 20px;
   transition: 1s;
   opacity: 0;
+  font-family: "Roboto";
 }
 
  #control_container {
@@ -103,6 +105,7 @@ input {
   font-family: "News Cycle";
   font-size: 24px;
   border-left: 1px solid #5cd65c;
+  overflow:auto;
 }
 
 
@@ -127,6 +130,10 @@ input {
   border-right: 1px solid #5cd65c;
   font-family: "News Cycle";
   margin-bottom: 5px;
+}
+
+#tableOfContents h1:hover, h2:hover, h4:hover {
+  cursor: pointer;
 }
 
 .instructions {
@@ -154,6 +161,10 @@ input {
   margin: 3px;
 }
 
+#annulus-display {
+  display: none;
+}
+
 .highlightSpan {
   cursor: pointer;
 }
@@ -161,14 +172,6 @@ input {
 .highlightSpan::selection {
   color: white;
   background-color: black;
-}
-
-
-.sidenote {
-  left: 740px;
-  position: absolute;
-  cursor: not-allowed;
-  font-family: "News Cycle";
 }
 
 #svg_control_container {
