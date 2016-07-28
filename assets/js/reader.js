@@ -25,11 +25,7 @@ var heirarchy = {
   //    ]
 //    }
   ],
-<<<<<<< HEAD
   "annulusArray": [],
-=======
-  "circleArray": [],
->>>>>>> origin/master
   "categories": d3.map()
 }
 
@@ -40,10 +36,6 @@ var grid_svg = "";
 var colorMap = d3.map();
 var current_index = 1;
 // for storing data to generate annulus rings later
-<<<<<<< HEAD
-=======
-var jsonDB = [];
->>>>>>> origin/master
 var annulusArray = [];
 var currentCircleArray = [];
 var dblReturnNext = false;
@@ -555,28 +547,12 @@ function separateIntoColumns() {
 
 //removes the highlighted text given an index and an id
 function removeThisHighlight(number, spanID) {
-<<<<<<< HEAD
     $("#" + spanID).contents().unwrap();
     for (var i = 0; i < activeSection.segments.length; i++) {
         if (activeSection.segments[i].index == number) {
           activeSection.segments.splice(i, 1);
         }
     }
-=======
-    contents =  $("#" + spanID).contents()[0].data;
-    console.log(contents);
-    $("#" + spanID).contents().unwrap();
-    // delete highlight from db
-    for (var i = 0; i < jsonDB.length; i++) {
-        if (jsonDB[i].index == number) jsonDB.splice(i, 1);
-    }
-
-    for (var i = 0; i < activeSection.segments.length; i++) {
-        if (contents == activeSection.segments[i].text) {
-          activeSection.segments.splice(i, 1);
-        }
-    }
->>>>>>> origin/master
     updateHeirarchyDisplay();
 }
 
@@ -584,10 +560,7 @@ function displayAnnulus() {
   d3.select("#instructions3").style("display", "none");
   d3.select("#svg_control_container").style("display", "none");
   d3.select("#annulus-display").style("display", "block");
-<<<<<<< HEAD
   d3.select("#animation").text("");
-=======
->>>>>>> origin/master
 
   reader_svg = d3.select("#appendhere").append("svg")
   .attr("id", "svg_container")
@@ -596,10 +569,6 @@ function displayAnnulus() {
   .style("margin-left", "50px");
 
   //draw the annulus
-<<<<<<< HEAD
-=======
-  annulusPrep();
->>>>>>> origin/master
   annulusPrepForSection(activeSection);
   drawAnnulusOfSection(activeSection);
 
@@ -612,11 +581,7 @@ function displayAnnulus() {
     if (text.length > 85) {
       text = text.substring(0, 85) + "..."
     }
-<<<<<<< HEAD
     d3.select("#circle_hover").html(activeSection.segments[i].category + " - " + "<span style='background-color: " + activeSection.segments[i].color + ";'>" + text + "</span>");
-=======
-    d3.select("#circle_hover").html(jsonDB[i].category + " - " + "<span style='background-color: " + jsonDB[i].color + ";'>" + text + "</span>");
->>>>>>> origin/master
   });
 
 }
@@ -629,37 +594,6 @@ function annulusPrepForSection(section) {
         return 0;
       })
       console.log(section.segments);
-}
-
-<<<<<<< HEAD
-function drawAnnulusOfSection(section) {
-=======
-function annulusPrepForSection(section) {
-      section.segments.sort(function(a, b) {
-        if (a.placement > b.placement) return 1;
-        if (a.placement < b.placement) return -1;
-        return 0;
-      })
-      console.log(section.segments);
-}
-
-//does exactly that
-function drawAnnulus() {
->>>>>>> origin/master
-  currentCircleArray = [];
-  var max_radius = svg_width / 2 - 10;
-  var center = svg_width / 2;
-  for (var i = 0; i < section.segments.length; i++) {
-      //draw the ring
-      drawRing(i + 1, section.segments[i].color, section.segments.length, section.segments[i].category, section.segments[i].text, max_radius, "current", center);
-      var ring = {
-                    "order": i + 1,
-                    "color": section.segments[i].color,
-                    "category": section.segments[i].category
-                    };
-      //add to list of current circles in case the annulus needs to be saved
-      currentCircleArray.push(ring);
-    }
 }
 
 function drawAnnulusOfSection(section) {
