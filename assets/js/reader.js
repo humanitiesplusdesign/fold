@@ -50,10 +50,13 @@ initializeReader();
 function initializeReader() {
   document.getElementById("continueToSections").addEventListener("click", function(){continueToSections()});
   document.getElementById("continueToHighlighting").addEventListener("click", function(){continueToHighlighting()});
+  document.getElementById("submit").addEventListener("click", function(){
+    displayText(d3.select("#fileupload").property("value"));
+  });
 
   //reads the file uploaded and displays to the left
   window.onload = function() {
-    var fileupload = document.getElementById('fileupload');
+    var fileupload = document.getElementById('fileupload2');
       fileupload.addEventListener('change', function(e) {
         var file = fileupload.files[0];
         var reader = new FileReader();
@@ -242,6 +245,8 @@ function displayText(result) {
         .attr("class", "partition")
         .html(result);
 
+      d3.select("#fileupload").style("display", "none");
+      d3.select("#submit").style("display", "none");
       d3.select("#instructions1").style("display", "none");
       d3.select("#instructions2").style("display", "block");
 
