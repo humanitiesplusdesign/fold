@@ -12,54 +12,44 @@ improve edit ui
 finish grid view update, column update
 */
 
-var heirarchy = {
-  "tree": [
-  //  {"id": "",
-  //  "text": "",
-  //  "sections": [
-  //    {
-  //      "topic": "",
-  //      "text": "",
-  //      "segments": []
-  //      },
-  //    ]
-//    }
-  ],
+let heirarchy = {
+  "tree": [],
   "annulusArray": [],
   "categories": d3.map()
 }
 
-var result;
-var svg_width = 400;
-var reader_svg;
-var grid_svg = "";
-var colorMap = d3.map();
-var current_index = 1;
+let result;
+let svg_width = 400;
+let reader_svg;
+let grid_svg = "";
+let colorMap = d3.map();
+let current_index = 1;
 // for storing data to generate annulus rings later
-var annulusArray = [];
-var currentCircleArray = [];
-var dblReturnNext = false;
-var partitioning = true;
-var sectioning = true;
-var currentPartition = "";
-var activeSection = "";
-var blinkCursor;
+let annulusArray = [];
+let currentCircleArray = [];
+let dblReturnNext = false;
+let partitioning = true;
+let sectioning = true;
+let currentPartition = "";
+let activeSection = "";
+let blinkCursor;
 
 initializeReader();
 
 function initializeReader() {
   document.getElementById("continueToSections").addEventListener("click", function(){continueToSections()});
   document.getElementById("continueToHighlighting").addEventListener("click", function(){continueToHighlighting()});
+
   document.getElementById("submit").addEventListener("click", function(){
     displayText(d3.select("#fileupload").property("value"));
   });
 
   //reads the file uploaded and displays to the left
   window.onload = function() {
-    var fileupload = document.getElementById('fileupload2');
+    let fileupload = document.getElementById('fileupload2');
       fileupload.addEventListener('change', function(e) {
-        var file = fileupload.files[0];
-        var reader = new FileReader();
+        let file = fileupload.files[0];
+        let reader = new FileReader();
         reader.onload = function(e) {
             result = reader.result;
             displayText(result);
@@ -70,51 +60,39 @@ function initializeReader() {
 }
 
 // updates the index/table on the lefthand side
-function updateHeirarchyDisplay() {
+function updateTable() {
     d3.select("#tableOfContents").html("");
-    appendTable();
-}
-
-function appendTable() {
-    var currentTable = d3.select("#tableOfContents")
-    var currentLength = heirarchy.tree.length;
-    for (var i = 0; i < currentLength; i++) {
-      var id = heirarchy.tree[i].id;
+    let currentTable = d3.select("#tableOfContents");
+    let currentLength = heirarchy.tree.length;
+    for (let i = 0; i < currentLength; i++) {
+      let id = heirarchy.tree[i].id;
       if (id == "") {
         id = "Part" + (i + 1) ;
       heirarchy.tree[i].id = id;
       }
-
       // creates div for each partition
       currentTable.append("div")
         .attr("id", "partition" + i)
         .html("<h1 id='" + id + "'>" + id + "</h1>");
-          // event listener closure
-          (function() {
-            var i1 = i;
-              document.getElementById(id).addEventListener("click", function(){
-                displayThisPartition(i1);
-              });
-          })();
+
+        document.getElementById(id).addEventListener("click", function(){
+          displayThisPartition(i);
+        });
       //add a div for each section, named based on topic if there is a topic
-      for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
-        var topic = (heirarchy.tree[i].sections[j].topic != "") ? heirarchy.tree[i].sections[j].topic : "Section" + (j + 1);
+      for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
+        let topic = (heirarchy.tree[i].sections[j].topic != "") ? heirarchy.tree[i].sections[j].topic : "Section" + (j + 1);
         heirarchy.tree[i].sections[j].topic = topic;
 
         d3.select("#" + "partition" + i).append("div")
           .attr("id", id + topic + j)
           .html("<h2>" + topic + "</h2>");
 
-          (function() {
-            var i1 = i;
-            var j1 = j;
-              document.getElementById(id + topic + j).addEventListener("click", function(){
-                displayThisSection(i1, j1);
-              });
-          })();
+        document.getElementById(id + topic + j).addEventListener("click", function(){
+          displayThisSection(i, j);
+        });
 
           //append  a div with a fragment of each highlighted segment in each secion
-          for (var k = 0; k < heirarchy.tree[i].sections[j].segments.length; k++) {
+          for (let k = 0; k < heirarchy.tree[i].sections[j].segments.length; k++) {
             d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j).append("div")
               .text(heirarchy.tree[i].sections[j].segments[k].text.substring(0, 20))
               .style("color", heirarchy.tree[i].sections[j].segments[k].color)
@@ -123,37 +101,43 @@ function appendTable() {
           }
       }
     }
+    //edit button when things are final
     if (!sectioning) {
-      currentTable.append("div")
-        .attr("id", "edit-id")
-        .html("<h4>Edit</h4>")
-        .on("click", function() {
-          currentTable.selectAll("h1, h2, h4").each(function(){
-            d3.select(this).attr("contenteditable", "true");
-              });
-            currentTable.append("div")
-              .html("<h4>Save Names and Topics</h4")
-              .on("click", function() {
-                currentTable.selectAll("h1, h2, h4").each(function() {
-                    d3.select(this).attr("contenteditable", "false");
-              });
-              for (var i = 0; i < currentLength; i++) {
-                for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
-                  //if topic is different than text, change topic for section to text
-                  if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2").text() != heirarchy.tree[i].sections[j].topic) {
-                    heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2"  ).text();
-                  }
-                }
-                // if partition name is different than text, change partition name to text
-                 if (d3.select("#" + heirarchy.tree[i].id).text() != heirarchy.tree[i].id) {
-                   heirarchy.tree[i].id = d3.select("#" + heirarchy.tree[i].id).text();
-                 }
-              }
-              updateHeirarchyDisplay();
-          })
-      });
+      appendEditButton();
     }
+}
 
+function appendEditButton() {
+  let currentTable = d3.select("#tableOfContents");
+  let currentLength = heirarchy.tree.length;
+  currentTable.append("div")
+    .attr("id", "edit-id")
+    .html("<h4>Edit</h4>")
+    .on("click", function() {
+      currentTable.selectAll("h1, h2, h4").each(function(){
+        d3.select(this).attr("contenteditable", "true");
+          });
+        currentTable.append("div")
+          .html("<h4>Save Names and Topics</h4")
+          .on("click", function() {
+            currentTable.selectAll("h1, h2, h4").each(function() {
+                d3.select(this).attr("contenteditable", "false");
+          });
+          for (let i = 0; i < currentLength; i++) {
+            for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
+              //if topic is different than text, change topic for section to text
+              if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2").text() != heirarchy.tree[i].sections[j].topic) {
+                heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2"  ).text();
+              }
+            }
+            // if partition name is different than text, change partition name to text
+             if (d3.select("#" + heirarchy.tree[i].id).text() != heirarchy.tree[i].id) {
+               heirarchy.tree[i].id = d3.select("#" + heirarchy.tree[i].id).text();
+             }
+          }
+          updateTable();
+      })
+  });
 }
 
 // set every section to display:none and set the relevant section to display:block
@@ -167,7 +151,7 @@ function displayThisSection(i, j) {
 // displays every section in this partition, sets active section to first section in partition
 function displayThisPartition(i) {
     d3.selectAll(".section").style("display", "none");
-    for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+    for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
       d3.select("#text-div-" + i + "-section-" + j).style("display", "block");
     }
     activeSection = heirarchy.tree[i].sections[0];
@@ -175,9 +159,9 @@ function displayThisPartition(i) {
 
 //based off of http://jsfiddle.net/TjXEG/1/
 function getCaretPos(element) {
-  var caretPos = 0;
-        var range = window.getSelection().getRangeAt(0);
-        var preCaretRange = range.cloneRange();
+  let caretPos = 0;
+        let range = window.getSelection().getRangeAt(0);
+        let preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(element);
         preCaretRange.setEnd(range.endContainer, range.endOffset);
         caretPos = preCaretRange.toString().length;
@@ -186,9 +170,9 @@ function getCaretPos(element) {
 
 // separates text into two partitions at caret position
 function createPartition(caretPos) {
-  var currentLength = heirarchy.tree.length;
+  let currentLength = heirarchy.tree.length;
 
-  for (var i = 0; i < currentLength; i++) {
+  for (let i = 0; i < currentLength; i++) {
     if (i != 0) caretPos -= heirarchy.tree[i - 1].text.length;
   }
   // push partition into tree
@@ -211,18 +195,18 @@ function createPartition(caretPos) {
 
 //seaprates partition into sections at caret position
 function createSection(caretPos, element) {
-  var i = +element.id.split("-")[2];
-  var currentSectionsLength = heirarchy.tree[i].sections.length;
+  let i = +element.id.split("-")[2];
+  let currentSectionsLength = heirarchy.tree[i].sections.length;
 
-  for (var j = 0; j < i; j++) {
+  for (let j = 0; j < i; j++) {
       caretPos -= heirarchy.tree[j].text.length;
   }
 
-  for (var j = 0; j < currentSectionsLength - 1; j++) {
+  for (let j = 0; j < currentSectionsLength - 1; j++) {
       caretPos -= heirarchy.tree[i].sections[j].text.length;
   }
 
-  var lastSection = heirarchy.tree[i].sections[currentSectionsLength - 1];
+  let lastSection = heirarchy.tree[i].sections[currentSectionsLength - 1];
 
   heirarchy.tree[i].sections.push(
     {
@@ -283,7 +267,7 @@ function continueToSections() {
 }
 
 function partitionListeners() {
-  for (var i = 0; i < heirarchy.tree.length; i++) {
+  for (let i = 0; i < heirarchy.tree.length; i++) {
     document.getElementById("text-div-" + i).removeEventListener("click", function() {
       currentPartition = this;
     });
@@ -316,7 +300,7 @@ function newInstructions() {
   highlightEventListeners();
   annulusDisplayListeners();
 
-  updateHeirarchyDisplay();
+  updateTable();
 
   d3.select("#control_container").append("svg")
   .attr("id", "svg_control_container");
@@ -331,9 +315,9 @@ function annulusDisplayListeners() {
   });
   document.getElementById("save").addEventListener("click", function() {
       d3.select("#saveform").style("opacity", 1);
-      var name = d3.select("#save_name").property("value");
-      var newName = true;
-      for (var i = 0; i < annulusArray.length; i++) {
+      let name = d3.select("#save_name").property("value");
+      let newName = true;
+      for (let i = 0; i < annulusArray.length; i++) {
         if (annulusArray[i].name === name) newName = false;
       }
       if (name != "" && newName === true) {
@@ -362,14 +346,14 @@ function returnEventListener() {
           dblReturnNext = true;
       } else if (e.which == 13 && dblReturnNext) {
         // create the partition
-          var caretpos = getCaretPos(document.getElementById("text_container"));
+          let caretpos = getCaretPos(document.getElementById("text_container"));
           createPartition(caretpos);
           dblReturnNext = false;
-          updateHeirarchyDisplay();
+          updateTable();
           d3.select("#text_container").html("")
           setupBlinkCursor();
           // create separate divs for each partition
-          for (var i = 0; i < heirarchy.tree.length; i++) {
+          for (let i = 0; i < heirarchy.tree.length; i++) {
             d3.select("#text_container").append("div")
               .attr("id", "text-div-" + i)
               .attr("class", "partition")
@@ -382,20 +366,20 @@ function returnEventListener() {
           dblReturnNext = true;
         } else if (e.which == 13 && dblReturnNext) {
             dblReturnNext = false;
-            var caretpos = getCaretPos(document.getElementById("text_container"));
+            let caretpos = getCaretPos(document.getElementById("text_container"));
             createSection(caretpos, currentPartition);
-            updateHeirarchyDisplay();
+            updateTable();
             d3.select("#text_container").html("");
             setupBlinkCursor();
 
             //use data from heirarchy to add divs containing divs, representing partitions and sections
-            for (var i = 0; i < heirarchy.tree.length; i++) {
+            for (let i = 0; i < heirarchy.tree.length; i++) {
               d3.select("#text_container").append("div")
                 .attr("id", "text-div-" + i)
                 .attr("class", "partition");
 
 
-                for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+                for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
                     d3.select("#text-div-" + i).append("div")
                       .attr("id", "text-div-" + i + "-section-" + j)
                       .attr("class", "section")
@@ -439,8 +423,8 @@ function highlightEventListeners() {
 
 // adds a new category with corresponding color for highlighting
 function addNewCategoryToSection(section) {
-  var colorH = d3.select("#colorH").property("value");
-  var categoryH = d3.select("#categoryH").property("value");
+  let colorH = d3.select("#colorH").property("value");
+  let categoryH = d3.select("#categoryH").property("value");
 
   heirarchy.categories.set(categoryH, colorH);
   showCategoriesOfSection(section);
@@ -450,11 +434,11 @@ function showCategoriesOfSection(section) {
   d3.select("#current_colors").html("");
   d3.select("#svg_control_container").html("");
 
-  var controlsHTML = "";
-  var position = 15;
-  var index = 1;
+  let controlsHTML = "";
+  let position = 15;
+  let index = 1;
   heirarchy.categories.forEach(function (key, value) {
-    var thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + index + " value=" + key + ">" + "</p>";
+    let thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + index + " value=" + key + ">" + "</p>";
     controlsHTML += thisControl;
     d3.select("#current_colors").html(controlsHTML);
     d3.select("#svg_control_container").append("circle")
@@ -465,20 +449,20 @@ function showCategoriesOfSection(section) {
       .attr("cy", position)
       .on("click", function() {
         heirarchy.categories.remove(key);
-        for (var i = 0; i < heirarchy.tree.length; i++) {
-          for (var j = 0; j < heirarchy.tree[i].sections.length; j++) {
+        for (let i = 0; i < heirarchy.tree.length; i++) {
+          for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
             deleteCategoryOfSection(heirarchy.tree[i].sections[j], key);
           }
         }
 
         //removes highlights of this color
-        var spans = d3.selectAll("span");
+        let spans = d3.selectAll("span");
         spans.each(function (d,i) {
           if (this.style.backgroundColor == value) $("#" + this.id).contents().unwrap();
         })
 
         showCategoriesOfSection(section);
-        updateHeirarchyDisplay();
+        updateTable();
       });
     position += 60;
     index += 1;
@@ -486,9 +470,9 @@ function showCategoriesOfSection(section) {
 }
 
 function deleteCategoryOfSection(section, category) {
-    for (var i = 0; i < 2; i++) {
-      var spliceCount = 0;
-      for (var j = 0; j < section.segments.length; j++) {
+    for (let i = 0; i < 2; i++) {
+      let spliceCount = 0;
+      for (let j = 0; j < section.segments.length; j++) {
         if (section.segments[j - spliceCount].category ==  category) {
           section.segments.splice(j - spliceCount, 1);
           spliceCount++;
@@ -498,15 +482,15 @@ function deleteCategoryOfSection(section, category) {
 }
 
 function highlight() {
-  var category = $('input[name=color]:checked').val();
-  var color = heirarchy.categories.get($('input[name=color]:checked').val());
+  let category = $('input[name=color]:checked').val();
+  let color = heirarchy.categories.get($('input[name=color]:checked').val());
 
     // get the selected text, put a span with appropriate id around it
-    var sel = window.getSelection();
-    var selText = sel.toString();
-    var range = sel.getRangeAt(0);
-    var newNode = document.createElement("span");
-    var spanID = color + category + current_index;
+    let sel = window.getSelection();
+    let selText = sel.toString();
+    let range = sel.getRangeAt(0);
+    let newNode = document.createElement("span");
+    let spanID = color + category + current_index;
     newNode.setAttribute('id', spanID);
     newNode.setAttribute('style', "background-color: " + color);
     newNode.setAttribute('class', "highlightSpan");
@@ -515,13 +499,13 @@ function highlight() {
     oRange = sel.getRangeAt(0); //get the text range
     oRect = oRange.getBoundingClientRect();
 
-    var placement = oRect.top + window.scrollY;
-    var this_index = current_index;
+    let placement = oRect.top + window.scrollY;
+    let this_index = current_index;
 
     document.getElementById(spanID).addEventListener("click", function(){
       removeThisHighlight(this_index, spanID);});
     // update the array for building rings
-    var segment = {
+    let segment = {
         "index": current_index,
         "text":  selText, //contents of line-height
         "category": category, //used to determine colors
@@ -533,14 +517,14 @@ function highlight() {
 
     activeSection.segments.push(segment);
     annulusPrepForSection(activeSection);
-    updateHeirarchyDisplay();
+    updateTable();
 }
 
 // to be finished - based on topic (?)
 function separateIntoColumns() {
   d3.select("#text_container").html("");
-  var top = 0;
-  for (var i = 0; i < jsonDB.length; i++) {
+  let top = 0;
+  for (let i = 0; i < jsonDB.length; i++) {
     d3.select("#text_container").append("div")
       .attr("id", "column_text_" + i)
       .style("position", "absolute")
@@ -567,12 +551,12 @@ function separateIntoColumns() {
 //removes the highlighted text given an index and an id
 function removeThisHighlight(number, spanID) {
     $("#" + spanID).contents().unwrap();
-    for (var i = 0; i < activeSection.segments.length; i++) {
+    for (let i = 0; i < activeSection.segments.length; i++) {
         if (activeSection.segments[i].index == number) {
           activeSection.segments.splice(i, 1);
         }
     }
-    updateHeirarchyDisplay();
+    updateTable();
 }
 
 function displayAnnulus() {
@@ -593,10 +577,10 @@ function displayAnnulus() {
 
   // add event listener which displays the highlighted text under the rings when the specific ring is clicked on
   d3.selectAll("circle").on("mousedown", function(d,i) {
-    var index = this.id.substring(6, 8);
+    let index = this.id.substring(6, 8);
     if (isNaN(index)) {index = +index.charAt(0);}
     index = +index - 1;
-    var text = activeSection.segments[i].text;
+    let text = activeSection.segments[i].text;
     if (text.length > 85) {
       text = text.substring(0, 85) + "..."
     }
@@ -616,12 +600,12 @@ function annulusPrepForSection(section) {
 
 function drawAnnulusOfSection(section) {
   currentCircleArray = [];
-  var max_radius = svg_width / 2 - 10;
-  var center = svg_width / 2;
-  for (var i = 0; i < section.segments.length; i++) {
+  let max_radius = svg_width / 2 - 10;
+  let center = svg_width / 2;
+  for (let i = 0; i < section.segments.length; i++) {
       //draw the ring
       drawRing(i + 1, section.segments[i].color, section.segments.length, section.segments[i].category, section.segments[i].text, max_radius, "current", center);
-      var ring = {
+      let ring = {
                     "order": i + 1,
                     "color": section.segments[i].color,
                     "category": section.segments[i].category
@@ -634,28 +618,28 @@ function drawAnnulusOfSection(section) {
 //does exactly that
 function drawRing(order, color, max, circleCategory, circleText, max_radius, name, center) {
   // calculate desired radius based on order in sequence - earlier rings get larger radii
-  var start_radius = 50 / max;
-  var increment = (max_radius - start_radius) / max;
-  var radius = max_radius - increment * order;
-  var opacity = order / max;
-  var circleName = "circle" + order + name;
-  var animationDelay = .1 * order;
-  var animationTime = .25 * max;
+  let start_radius = 50 / max;
+  let increment = (max_radius - start_radius) / max;
+  let radius = max_radius - increment * order;
+  let opacity = order / max;
+  let circleName = "circle" + order + name;
+  let animationDelay = .1 * order;
+  let animationTime = .25 * max;
 
-  var animationName = "animateSize" + circleName;
+  let animationName = "animateSize" + circleName;
   // a hack of sorts - inserts a unique animation into <style> tag at header for each size circle.
   // alternative which i couldn't get to work: insert rules into stylesheet (@keyframes doesnt behave well with this)
-  var new_rule = "\
+  let new_rule = "\
   @keyframes " + animationName + "{0% {r: 0px;} 100% {r: " + radius + "px;}}\
   ";
-  var rule_with_opacity = "\
+  let rule_with_opacity = "\
   @keyframes " + animationName + "{0% {r: 0px; opacity: 1} 5% {r: 10px} 100% {r: " + radius + "px; opacity: " + opacity + "}}\
   ";
-  var current_animations = d3.select("#animation").text();
+  let current_animations = d3.select("#animation").text();
   //adds the new animation rule for the new circle
   d3.select("#animation").text(current_animations + rule_with_opacity);
   //draw a circle
-  var current_svg;
+  let current_svg;
   if (grid_svg != "") {
       current_svg = grid_svg;
     } else {
@@ -687,35 +671,35 @@ function Annulus(circleArray, name, index) {
 }
 
 function saveAnnulus(name) {
-  var currentIndex = annulusArray.length;
-  var annulus = new Annulus(currentCircleArray, name, currentIndex);
+  let currentIndex = annulusArray.length;
+  let annulus = new Annulus(currentCircleArray, name, currentIndex);
   annulusArray.push(annulus);
   heirarchy.annulusArray.push(annulus);
 }
 
 function recreateAnnulus(center) {
-  for (var i = 0; i < this.max; i++) {
-    var order = this.circleArray[i].order;
-    var color = this.circleArray[i].color;
-    var max = this.max;
-    var circleCategory = this.circleArray[i].category;
-    var name = this.name;
-    var max_radius = 200;
+  for (let i = 0; i < this.max; i++) {
+    let order = this.circleArray[i].order;
+    let color = this.circleArray[i].color;
+    let max = this.max;
+    let circleCategory = this.circleArray[i].category;
+    let name = this.name;
+    let max_radius = 200;
 
     drawRing(order, color, max, circleCategory, name, max_radius, name, center);
   }
 }
 
 function gridView() {
-  var body = d3.select("#text_container");
-  var storeHTML = body.html();
+  let body = d3.select("#text_container");
+  let storeHTML = body.html();
   body.html("");
   d3.select("#control_container").style("border-left", "none");
   d3.select("#svg_container").html("");
 
-  var numAnnulus = annulusArray.length;
-  var width;
-  var height;
+  let numAnnulus = annulusArray.length;
+  let width;
+  let height;
 
   width = 500;
   height = 500;
@@ -725,9 +709,9 @@ function gridView() {
     .attr("width", "1000%")
     .attr("height", "550px");
 
-  var center = width / 2;
+  let center = width / 2;
 
-  for (var i = 0; i < annulusArray.length; i++) {
+  for (let i = 0; i < heirarchy.annulusArray.length; i++) {
       annulusArray[i].draw(center);
       grid_svg.append("text")
       .html(annulusArray[i].name)
