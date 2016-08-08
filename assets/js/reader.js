@@ -1,18 +1,5 @@
-/*
-
-To do:
-Fix new bug with fonts when skipping partitioning/sectioning
-
-fix annulus circle click behavior
-
-improve delete behavior
-
-improve edit ui
-
-finish grid view update, column update
-*/
-
-let heirarchy = {
+(function () {
+const heirarchy = {
   "tree": [],
   "annulusArray": [],
   "categories": d3.map()
@@ -37,13 +24,15 @@ let blinkCursor;
 initializeReader();
 
 function initializeReader() {
-  document.getElementById("continueToSections").addEventListener("click", function(){continueToSections()});
-  document.getElementById("continueToHighlighting").addEventListener("click", function(){continueToHighlighting()});
+  $("#submit").click(function(event) {
+    if (d3.select("#fileupload").property("value") == "") {
+          $('#fileupload2').click();
+    } else {
+      parseTextHelper(d3.select("#fileupload").property("value"));
+      displayTable();
+    }
 
-  document.getElementById("submit").addEventListener("click", function(){
-    displayText(d3.select("#fileupload").property("value"));
-  });
-
+  })
   //reads the file uploaded and displays to the left
   window.onload = function() {
     let fileupload = document.getElementById('fileupload2');
@@ -52,12 +41,33 @@ function initializeReader() {
         let reader = new FileReader();
         reader.onload = function(e) {
             result = reader.result;
-            displayText(result);
+            parseTextHelper(result);
+            displayTable();
         }
         reader.readAsText(file);
       });
     }
 }
+
+  function traverseAndUpdateTableHelper() {
+    d3.select("#tableOfContents").html("");
+    let currentTable = d3.select("#tableOfContents");
+    traverseAndUpdateTable(currentTable, heirarchy.tree[0].sections);
+  }
+
+  function traverseAndUpdateTable(currentTable, arrayOfSections) {
+    for (let i = 0; i < arrayOfSections.length; i++) {
+      let id = arrayOfSections[i].id;
+      let level = arrayOfSections[i].level;
+      let name = (arrayOfSections[i].name == "") ? id : arrayOfSections[i].name;
+      currentTable.append("div")
+        .attr("id", id)
+        .style("margin-left", level * 20 + "px")
+        .html("<h" + level + " id='" + id + "'>" + name+ "</h" + level + ">");
+
+      traverseAndUpdateTable(currentTable, arrayOfSections[i].sections);
+    }
+  }
 
 // updates the index/table on the lefthand side
 function updateTable() {
@@ -157,98 +167,63 @@ function displayThisPartition(i) {
     activeSection = heirarchy.tree[i].sections[0];
 }
 
-//based off of http://jsfiddle.net/TjXEG/1/
-function getCaretPos(element) {
-  let caretPos = 0;
-        let range = window.getSelection().getRangeAt(0);
-        let preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(element);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        caretPos = preCaretRange.toString().length;
-  return caretPos
+function parseTextHelper(result) {
+   let header = "\n#\n";
+   heirarchy.tree.push({
+     "parentName": "",
+     "name": "",
+     "text": result,
+     "sections": [],
+     "level": 0,
+     "header": header,
+   })
+   parseText(header, heirarchy.tree[0]);
+   console.log(heirarchy.tree);
 }
 
-// separates text into two partitions at caret position
-function createPartition(caretPos) {
-  let currentLength = heirarchy.tree.length;
+function parseText(header, section) {
+  let textArray = section.text.split(header);
 
-  for (let i = 0; i < currentLength; i++) {
-    if (i != 0) caretPos -= heirarchy.tree[i - 1].text.length;
-  }
-  // push partition into tree
-  heirarchy.tree.push({
-    "id": "",
-    "text": heirarchy.tree[currentLength - 1].text.substring(caretPos, heirarchy.tree[currentLength - 1].text.length),
-    "sections": [
-      {
-        "topic": "",
-        "text": heirarchy.tree[currentLength - 1].text.substring(caretPos, heirarchy.tree[currentLength - 1].text.length),
-        "segments": [],
-        "categories": d3.map()
-      }
-      ]
-    });
-  //appropriately change previous partitions and partition sections
-  heirarchy.tree[currentLength - 1].text = heirarchy.tree[currentLength - 1].text.substring(0, caretPos);
-  heirarchy.tree[currentLength - 1].sections[0].text = heirarchy.tree[currentLength - 1].text;
-}
-
-//seaprates partition into sections at caret position
-function createSection(caretPos, element) {
-  let i = +element.id.split("-")[2];
-  let currentSectionsLength = heirarchy.tree[i].sections.length;
-
-  for (let j = 0; j < i; j++) {
-      caretPos -= heirarchy.tree[j].text.length;
-  }
-
-  for (let j = 0; j < currentSectionsLength - 1; j++) {
-      caretPos -= heirarchy.tree[i].sections[j].text.length;
-  }
-
-  let lastSection = heirarchy.tree[i].sections[currentSectionsLength - 1];
-
-  heirarchy.tree[i].sections.push(
-    {
-      "topic": "",
-      "text": lastSection.text.substring(caretPos),
-      "segments": [],
-      "categories": d3.map()
+  if (textArray.length > 1) {
+    for (let i = 0; i < textArray.length; i++) {
+        section.sections.push({
+          "parentName": section.parentName,
+          "name": "",
+          "id": section.parentName + "section" + i,
+          "text": textArray[i],
+          "sections": [],
+          "level": section.level + 1,
+          "header":  header.substring(0, header.length - 1) + "#\n"
+        });
     }
-  );
-  lastSection.text = lastSection.text.substring(0, caretPos);
+    for (let i = 0; i < section.sections.length; i++) {
+      parseText(section.sections[i].header, section.sections[i]);
+    }
   }
+
+}
 
 // does exactly that
-function displayText(result) {
-      d3.select("#control_container_before").attr("id", "control_container");
-      d3.select("#text_container_before").attr("id", "text_container");
-
-      d3.select("#text_container").style("opacity", 1).append("div")
-        .attr("id", "text-div-" + 0)
-        .attr("class", "partition")
+function displayText() {
+  let result;
+  for (let i = 0; i < heirarchy.tree.length; i++) {
+    result += heirarchy.tree[i].text;
+  }
+  d3.select("#intro").style("display", "none");
+  d3.select("#text_container")
         .html(result);
 
-      d3.select("#fileupload").style("display", "none");
-      d3.select("#submit").style("display", "none");
-      d3.select("#instructions1").style("display", "none");
-      d3.select("#instructions2").style("display", "block");
+  $('#toggle-settings').on("click", function() {
+    $('#text-container').style("display", "none");
+    $('#settings').style("display", "block");
+  })
+}
 
-      setupBlinkCursor();
-      returnEventListener();
-      // creates initial partition containing entire uploaded document
-      heirarchy.tree.push({
-        "id": "",
-        "text": result,
-        "sections": [
-            {
-              "topic": "",
-              "text": result,
-              "segments": [],
-              "categories": d3.map()
-            }
-          ]
-      })
+function displayTable() {
+  d3.select("#intro").style("display", "none");
+  d3.select("#text-container").style("display", "none");
+  d3.select("#tableOfContents").style("display", "block");
+  traverseAndUpdateTableHelper();
 }
 
 function continueToSections() {
@@ -266,21 +241,10 @@ function continueToSections() {
   }
 }
 
-function partitionListeners() {
-  for (let i = 0; i < heirarchy.tree.length; i++) {
-    document.getElementById("text-div-" + i).removeEventListener("click", function() {
-      currentPartition = this;
-    });
-    document.getElementById("text-div-" + i).addEventListener("click", function() {
-      currentPartition = this;
-    });
-  }
-}
+
 
 function continueToHighlighting() {
   newInstructions();
-  sectioning = false;
-  $("body").off();
   $("body").on("keydown", function() {
     if (event.which === 17) {
       //testing
@@ -328,71 +292,6 @@ function annulusDisplayListeners() {
   });
   document.getElementById("grid").addEventListener("click", function () {gridView()})
 }
-
-function returnEventListener() {
-  $("body").on("click", function(e) {
-    if (dblReturnNext) dblReturnNext = false;
-
-
-    blinkCursor.style("top", event.y - 20 + $('body').scrollTop() + "px")
-    .style("left", event.x + "px")
-    .style("visibility", "visible");
-  })
-
-  $("body").on("keydown", function(e){
-    // partitions
-    if (partitioning) {
-      if (e.which == 13 && !dblReturnNext) {
-          dblReturnNext = true;
-      } else if (e.which == 13 && dblReturnNext) {
-        // create the partition
-          let caretpos = getCaretPos(document.getElementById("text_container"));
-          createPartition(caretpos);
-          dblReturnNext = false;
-          updateTable();
-          d3.select("#text_container").html("")
-          setupBlinkCursor();
-          // create separate divs for each partition
-          for (let i = 0; i < heirarchy.tree.length; i++) {
-            d3.select("#text_container").append("div")
-              .attr("id", "text-div-" + i)
-              .attr("class", "partition")
-              .html(heirarchy.tree[i].text);
-          }
-      } else if (dblReturnNext) dblReturnNext = false;
-    } else {
-
-      if (e.which == 13 && !dblReturnNext) {
-          dblReturnNext = true;
-        } else if (e.which == 13 && dblReturnNext) {
-            dblReturnNext = false;
-            let caretpos = getCaretPos(document.getElementById("text_container"));
-            createSection(caretpos, currentPartition);
-            updateTable();
-            d3.select("#text_container").html("");
-            setupBlinkCursor();
-
-            //use data from heirarchy to add divs containing divs, representing partitions and sections
-            for (let i = 0; i < heirarchy.tree.length; i++) {
-              d3.select("#text_container").append("div")
-                .attr("id", "text-div-" + i)
-                .attr("class", "partition");
-
-
-                for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
-                    d3.select("#text-div-" + i).append("div")
-                      .attr("id", "text-div-" + i + "-section-" + j)
-                      .attr("class", "section")
-                      .html(heirarchy.tree[i].sections[j].text);
-                }
-
-            }
-            partitionListeners();
-        }
-    }
-    });
-  }
-
 
 
 //only call when these buttons exist
@@ -728,12 +627,34 @@ function gridView() {
         body.html(storeHTML);
         d3.select("#control_container").style("border-left", "1px solid #5cd65c");
       });
-}
+  }
 
-function setupBlinkCursor() {
-    blinkCursor = d3.select("#text_container").append("span")
-      .attr("id", "blink")
-      .text("|")
-      .style("visibility", "hidden")
-      .style("position", "absolute");
-}
+  function setupBlinkCursor() {
+      blinkCursor = d3.select("#text_container").append("span")
+        .attr("id", "blink")
+        .text("|")
+        .style("visibility", "hidden")
+        .style("position", "absolute");
+  }
+
+
+
+  /////
+/*
+  createLinearVisualization(part) {
+    d3.select("#linvis").html("");
+    let rectArray = getRectanglesHelper(part);
+
+  }
+
+  getRectanglesHelper(part) {
+    let rectArray = [];
+  }
+
+  getRectanglesOf() {
+
+  }
+*/
+
+
+})();

@@ -1,10 +1,16 @@
+body {
+  margin: 0;
+  color: gray;
+  font-weight: 300;
+}
+
 button, input {
   border-radius: 0px;
   box-shadow: none;
   cursor: pointer;
-  font-family: "News Cycle";
+  font-family: "Roboto";
   color: #262626;
-  border: 1px solid #5cd65c;
+  border: 1px solid gray;
   background-color: white;
   transition: .2s;
 }
@@ -14,8 +20,12 @@ button:hover {
 }
 
 #fileupload {
-  width: 600px;
-  height: 300px;
+  width: 400px;
+  height: 100px;
+}
+
+#fileupload2 {
+display: none;
 }
 
 .partition, .section {
@@ -42,25 +52,59 @@ button:hover {
 #title {
   width: 100%;
   text-align: center;
-  font-family: "News Cycle", sans-serif;
+  font-family: "Roboto", sans-serif;
   color: #262626;
-  border-bottom: 3px solid #5cd65c;
+    margin-top: 8px;
+  border-bottom: 3px solid gray;
+  box-shadow: 0 3px 2px -2px gray;
   transition: .2s;
-  font-weight: bold;
   height: 50px;
+}
+
+#icon-controls {
+  width: 100%;
+  text-align: center;
+  height: 50px;
+  margin-top: 10px;
+}
+
+#icon-controls i {
+  margin-right: 20px;
+  transition: .1s;
+}
+
+#icon-controls i:hover {
+  color: black;
+  cursor: pointer;
+}
+
+#intro {
+  width: 100%;
+  text-align: center;
+  font-size: 25px;
 }
 
 #name {
   float: left;
   margin-left: 30px;
   font-size: 30px;
-  cursor:pointer;
-  margin-top: 0px;
+  cursor: pointer;
+  font-weight: 300;
+
+}
+
+#subtitle {
+  float: left;
+  font-size: 20x;
+  margin-left: 17px;
+  margin-top: 10px;
+  color: red;
+  font-weight: 300;
 }
 
 #name a {
   text-decoration: none;
-  color: #262626;
+  color: gray;
   transition: .08s;
 }
 
@@ -74,16 +118,9 @@ button:hover {
 
 #name a:hover {
   text-decoration: none;
-  color: #5cd65c;
+  color: gray;
 }
 
-#subtitle {
-  float: right;
-  margin-right: 10px;
-  font-size: 25px;
-  margin-top: 8px;
-  color: #999999;
-}
 
 button {
   width: 100px;
@@ -101,25 +138,14 @@ input {
   100% {left: 70px; top: 40px; opacity: 0}
 }
 
-#text_container_before {
-  float: left;
-  margin-left: 20px;
-  margin-top: 20px;
-  padding: 20px;
-  transition: 1s;
-  opacity: 0;
-  font-family: "Roboto";
-}
-
 #text_container {
-  width: 650px;
-  float: left;
-  margin-left: 20px;
+  width: 70%;
+  margin-left: 10%;
   margin-top: 20px;
   padding: 20px;
   transition: 1s;
-  opacity: 0;
   font-family: "Roboto";
+  white-space: pre-wrap;
 }
 
  #control_container {
@@ -128,39 +154,37 @@ input {
   margin-left: 830px;
   margin-right: 50px;
   padding: 10px;
-  font-family: "News Cycle";
+  font-family: "Roboto";
   font-size: 24px;
-  border-left: 1px solid #5cd65c;
+  border-left: 1px solid gray;
   overflow:auto;
-}
-
-
-#text_container::selection {
-  background-color: black;
-  color: white;
 }
 
 #control_container_before {
   width: 600px;
   padding-top: 20px;
   margin: auto;
-  font-family: "News Cycle";
+  font-family: "Roboto";
   font-size: 26px;
   text-align: center;
 }
 
-#tableOfContents {
-  width: 100px;
+#left_column {
+  width: 10%;
   height: 500px;
   float: left;
-  border-right: 1px solid #5cd65c;
-  font-family: "News Cycle";
+  font-family: "Roboto";
   margin-bottom: 5px;
 }
 
-#tableOfContents h1:hover, h2:hover, h4:hover {
-  cursor: pointer;
+#tableOfContents {
+  width: 70%;
+  height: 500px;
+  margin-left: 10%;
+  background: lightgreen;
+  display: none;
 }
+
 
 .instructions {
   transition: 2s;
@@ -168,7 +192,16 @@ input {
 
 #instructions1 {
   text-align: center;
-  opacity: 1;
+  margin-top: 30px;
+  font-family: "Roboto";
+  font-weight: 300;
+}
+
+#submit {
+  color: gray;
+  font-family: "Roboto";
+  font-weight: 300;
+  margin-left: 40px;
 }
 
 #instructions2 {
@@ -209,7 +242,7 @@ input {
 }
 
 #circle_hover {
-  border-bottom: 1px solid #5cd65c;
+  border-bottom: 1px solid gray;
   width: 500px;
 }
 
@@ -220,7 +253,7 @@ input {
 
 .svgcircle:hover {
   opacity: 1;
-  background-color: #5cd65c;
+  background-color: gray;
   transition: .2s;
 }
 
@@ -238,7 +271,7 @@ input {
 }
 
 #annulusName {
-  font-family: "News Cycle";
+  font-family: "Roboto";
   font-size: 16px;
-  border-bottom: 1px solid #5cd65c;
+  border-bottom: 1px solid gray;
 }
