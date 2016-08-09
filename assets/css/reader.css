@@ -178,11 +178,22 @@ input {
 }
 
 #tableOfContents {
-  width: 70%;
+  width: 60%;
   height: 500px;
-  margin-left: 10%;
-  background: lightgreen;
+  background: rgb(245, 245, 245);
   display: none;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#table {
+  text-align: left;
+}
+
+#table h1, h2, h3, h4 {
+  font-family: "Roboto";
+  font-weight: 300;
+  cursor: pointer;
 }
 
 
@@ -195,6 +206,7 @@ input {
   margin-top: 30px;
   font-family: "Roboto";
   font-weight: 300;
+  font-size: 30px;
 }
 
 #submit {

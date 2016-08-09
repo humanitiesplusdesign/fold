@@ -1,8 +1,16 @@
+/* To do:
+Get parsing and ToC working decently well
+Create setting page
+Create the hovering color selection div
+
+
+*/
 (function () {
 const heirarchy = {
   "tree": [],
   "annulusArray": [],
-  "categories": d3.map()
+  "categories": d3.map(),
+  "title": "Project 1"
 }
 
 let result;
@@ -51,151 +59,94 @@ function initializeReader() {
 
   function traverseAndUpdateTableHelper() {
     d3.select("#tableOfContents").html("");
-    let currentTable = d3.select("#tableOfContents");
-    traverseAndUpdateTable(currentTable, heirarchy.tree[0].sections);
+
+    d3.select("#tableOfContents").append("div")
+      .html("<h1>TABLE OF CONTENTS</h1>");
+
+    d3.select("#tableOfContents").append("div")
+      .html("<h2>Project Title: " + heirarchy.title + "</h2>");
+
+    d3.select("#tableOfContents").append("div")
+      .attr("id", "table");
+
+    let currentTable = d3.select("#table");
+      traverseAndUpdateTable(currentTable, heirarchy.tree[0].sections);
   }
 
-  function traverseAndUpdateTable(currentTable, arrayOfSections) {
+  function traverseAndUpdateTable(table, arrayOfSections) {
     for (let i = 0; i < arrayOfSections.length; i++) {
       let id = arrayOfSections[i].id;
       let level = arrayOfSections[i].level;
       let name = (arrayOfSections[i].name == "") ? id : arrayOfSections[i].name;
-      currentTable.append("div")
+      table.append("div")
         .attr("id", id)
-        .style("margin-left", level * 20 + "px")
-        .html("<h" + level + " id='" + id + "'>" + name+ "</h" + level + ">");
-
-      traverseAndUpdateTable(currentTable, arrayOfSections[i].sections);
+        .style("margin-left", (level - 1) * 40 + "px")
+        .html("<h" + level + " id='" + id + "'>" + id + " " +   name+ "</h" + level + ">")
+        .on("click", function() {
+          console.log("clicked " + id);
+          prepareText(id);
+        });
+      traverseAndUpdateTable(table, arrayOfSections[i].sections);
     }
   }
 
-// updates the index/table on the lefthand side
-function updateTable() {
-    d3.select("#tableOfContents").html("");
-    let currentTable = d3.select("#tableOfContents");
-    let currentLength = heirarchy.tree.length;
-    for (let i = 0; i < currentLength; i++) {
-      let id = heirarchy.tree[i].id;
-      if (id == "") {
-        id = "Part" + (i + 1) ;
-      heirarchy.tree[i].id = id;
-      }
-      // creates div for each partition
-      currentTable.append("div")
-        .attr("id", "partition" + i)
-        .html("<h1 id='" + id + "'>" + id + "</h1>");
-
-        document.getElementById(id).addEventListener("click", function(){
-          displayThisPartition(i);
-        });
-      //add a div for each section, named based on topic if there is a topic
-      for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
-        let topic = (heirarchy.tree[i].sections[j].topic != "") ? heirarchy.tree[i].sections[j].topic : "Section" + (j + 1);
-        heirarchy.tree[i].sections[j].topic = topic;
-
-        d3.select("#" + "partition" + i).append("div")
-          .attr("id", id + topic + j)
-          .html("<h2>" + topic + "</h2>");
-
-        document.getElementById(id + topic + j).addEventListener("click", function(){
-          displayThisSection(i, j);
-        });
-
-          //append  a div with a fragment of each highlighted segment in each secion
-          for (let k = 0; k < heirarchy.tree[i].sections[j].segments.length; k++) {
-            d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j).append("div")
-              .text(heirarchy.tree[i].sections[j].segments[k].text.substring(0, 20))
-              .style("color", heirarchy.tree[i].sections[j].segments[k].color)
-              .style("font-size", "10px")
-              .style("margin", "1px");
-          }
-      }
-    }
-    //edit button when things are final
-    if (!sectioning) {
-      appendEditButton();
-    }
-}
-
-function appendEditButton() {
-  let currentTable = d3.select("#tableOfContents");
-  let currentLength = heirarchy.tree.length;
-  currentTable.append("div")
-    .attr("id", "edit-id")
-    .html("<h4>Edit</h4>")
-    .on("click", function() {
-      currentTable.selectAll("h1, h2, h4").each(function(){
-        d3.select(this).attr("contenteditable", "true");
-          });
-        currentTable.append("div")
-          .html("<h4>Save Names and Topics</h4")
-          .on("click", function() {
-            currentTable.selectAll("h1, h2, h4").each(function() {
-                d3.select(this).attr("contenteditable", "false");
-          });
-          for (let i = 0; i < currentLength; i++) {
-            for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
-              //if topic is different than text, change topic for section to text
-              if (d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2").text() != heirarchy.tree[i].sections[j].topic) {
-                heirarchy.tree[i].sections[j].topic = d3.select("#" + heirarchy.tree[i].id + heirarchy.tree[i].sections[j].topic + j + " h2"  ).text();
-              }
-            }
-            // if partition name is different than text, change partition name to text
-             if (d3.select("#" + heirarchy.tree[i].id).text() != heirarchy.tree[i].id) {
-               heirarchy.tree[i].id = d3.select("#" + heirarchy.tree[i].id).text();
-             }
-          }
-          updateTable();
-      })
-  });
-}
-
-// set every section to display:none and set the relevant section to display:block
-function displayThisSection(i, j) {
-    d3.selectAll(".section").style("display", "none");
-    d3.select("#text-div-" + i + "-section-" + j).style("display", "block");
-    activeSection = heirarchy.tree[i].sections[j];
-    showCategoriesOfSection(activeSection);
-}
-
-// displays every section in this partition, sets active section to first section in partition
-function displayThisPartition(i) {
-    d3.selectAll(".section").style("display", "none");
-    for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
-      d3.select("#text-div-" + i + "-section-" + j).style("display", "block");
-    }
-    activeSection = heirarchy.tree[i].sections[0];
-}
-
 function parseTextHelper(result) {
-   let header = "\n#\n";
+   let header = "#";
    heirarchy.tree.push({
-     "parentName": "",
      "name": "",
      "text": result,
+     "id": "Part",
      "sections": [],
      "level": 0,
      "header": header,
    })
    parseText(header, heirarchy.tree[0]);
-   console.log(heirarchy.tree);
+   console.log(heirarchy.tree[0]);
 }
 
+/*
+* Parses input text for markdown headers and creates sections based on these
+*/
 function parseText(header, section) {
-  let textArray = section.text.split(header);
+  let textArray = [];
+  let indexArray = [];
+  //get indexes of text breaks into sections based on header
+  for (let i = 0; i < section.text.length; i++) {
+    if (section.text.substr(i, header.length) == header && section.text.charAt(i + header.length) != "#" && section.text.charAt(i - 1) != "#" ) {
+        indexArray.push(i);
+      }
+  }
+  //get name if there is one after the header, break text, push into array
+  for (let i = 0; i < indexArray.length; i++) {
+    let pos = indexArray[i] + header.length;
+    let name = "";
+    for (let j = pos; j < section.text.length; j++) {
+      if (section.text.charAt(j) == "\n") {
+        break;
+      }
+      name += section.text.charAt(j);
+    }
+    let end = 0;
+    if (i == indexArray.length - 1) {
+      end = section.text.length;
+    } else {
+      end = indexArray[i + 1];
+    }
+    textArray.push({"name": name, "text": section.text.substring(pos, end)});
+  }
 
-  if (textArray.length > 1) {
+  if (textArray.length > 0) {
     for (let i = 0; i < textArray.length; i++) {
         section.sections.push({
-          "parentName": section.parentName,
-          "name": "",
-          "id": section.parentName + "section" + i,
-          "text": textArray[i],
+          "name": textArray[i].name,
+          "id": section.id + "." + i,
+          "text": textArray[i].text,
           "sections": [],
           "level": section.level + 1,
-          "header":  header.substring(0, header.length - 1) + "#\n"
+          "header":  header + "#"
         });
     }
+    //recursively call on each section
     for (let i = 0; i < section.sections.length; i++) {
       parseText(section.sections[i].header, section.sections[i]);
     }
@@ -204,25 +155,51 @@ function parseText(header, section) {
 }
 
 // does exactly that
-function displayText() {
-  let result;
-  for (let i = 0; i < heirarchy.tree.length; i++) {
-    result += heirarchy.tree[i].text;
-  }
-  d3.select("#intro").style("display", "none");
+function prepareText(section) {
+  displayOnly("#text-container");
+  let result = heirarchy.tree[0].sections[section.split(".")[1]].text;
   d3.select("#text_container")
         .html(result);
 
+
+  iconEventListeners();
+}
+
+
+function iconEventListeners() {
+  $('#toggle-read').on("click", function() {
+    displayOnly("#text-container");
+    // make sure to choose only approopriate partition
+  });
+  $('#toggle-annotate').on("click", function() {
+    displayOnly("#settings");
+    //display other stuff
+  });
+  $('#toggle-toc').on("click", function() {
+    displayOnly("#tableOfContents");
+  });
+  $('#toggle-compare').on("click", function() {
+    //displayOnly("#compare");
+  });
   $('#toggle-settings').on("click", function() {
-    $('#text-container').style("display", "none");
-    $('#settings').style("display", "block");
-  })
+    displayOnly("#settings");
+  });
+}
+
+function displayOnly(selection) {
+  d3.select("#intro").style("display", "none");
+  d3.select("#text-container").style("display", "none");
+  d3.select("#settingsr").style("display", "none");
+  // add in everything that needs to be hidden
+  d3.select("#tableOfContents").style("display", "none");
+
+  d3.select(selection).style("display", "block");
+
+
 }
 
 function displayTable() {
-  d3.select("#intro").style("display", "none");
-  d3.select("#text-container").style("display", "none");
-  d3.select("#tableOfContents").style("display", "block");
+  displayOnly("#tableOfContents");
   traverseAndUpdateTableHelper();
 }
 
