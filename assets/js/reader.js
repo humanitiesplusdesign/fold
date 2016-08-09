@@ -13,24 +13,19 @@ const heirarchy = {
   "title": "Project 1"
 }
 
-let result;
 let svg_width = 400;
 let reader_svg;
 let grid_svg = "";
 let colorMap = d3.map();
-let current_index = 1;
 // for storing data to generate annulus rings later
 let annulusArray = [];
 let currentCircleArray = [];
-let dblReturnNext = false;
-let partitioning = true;
-let sectioning = true;
-let currentPartition = "";
-let activeSection = "";
-let blinkCursor;
 
 initializeReader();
 
+/*
+*  Initializes the entire application
+*/
 function initializeReader() {
   $("#submit").click(function(event) {
     if (d3.select("#fileupload").property("value") == "") {
@@ -39,7 +34,6 @@ function initializeReader() {
       parseTextHelper(d3.select("#fileupload").property("value"));
       displayTable();
     }
-
   })
   //reads the file uploaded and displays to the left
   window.onload = function() {
@@ -57,6 +51,9 @@ function initializeReader() {
     }
 }
 
+/*
+* Helper for recursive table function
+*/
   function traverseAndUpdateTableHelper() {
     d3.select("#tableOfContents").html("");
 
@@ -73,23 +70,31 @@ function initializeReader() {
       traverseAndUpdateTable(currentTable, heirarchy.tree[0].sections);
   }
 
+  /*
+  * Traverses the table and creates headers for each section of the text
+  */
   function traverseAndUpdateTable(table, arrayOfSections) {
     for (let i = 0; i < arrayOfSections.length; i++) {
       let id = arrayOfSections[i].id;
       let level = arrayOfSections[i].level;
+      // if the section is unnamed, simply give it its id as a name
+
       let name = (arrayOfSections[i].name == "") ? id : arrayOfSections[i].name;
       table.append("div")
         .attr("id", id)
         .style("margin-left", (level - 1) * 40 + "px")
         .html("<h" + level + " id='" + id + "'>" + id + " " +   name+ "</h" + level + ">")
         .on("click", function() {
-          console.log("clicked " + id);
           prepareText(id);
+          displayOnly("#text_container");
         });
       traverseAndUpdateTable(table, arrayOfSections[i].sections);
     }
   }
 
+/*
+* Helper for recursive parse function
+*/
 function parseTextHelper(result) {
    let header = "#";
    heirarchy.tree.push({
@@ -156,26 +161,22 @@ function parseText(header, section) {
 
 // does exactly that
 function prepareText(section) {
-  displayOnly("#text-container");
   let result = heirarchy.tree[0].sections[section.split(".")[1]].text;
   d3.select("#text_container")
         .html(result);
-
-
-  iconEventListeners();
 }
 
 
 function iconEventListeners() {
-  $('#toggle-read').on("click", function() {
-    displayOnly("#text-container");
+  $('#toggle-text_container').on("click", function() {
+    displayOnly("#text_container");
     // make sure to choose only approopriate partition
   });
   $('#toggle-annotate').on("click", function() {
     displayOnly("#settings");
     //display other stuff
   });
-  $('#toggle-toc').on("click", function() {
+  $('#toggle-tableOfContents').on("click", function() {
     displayOnly("#tableOfContents");
   });
   $('#toggle-compare').on("click", function() {
@@ -188,12 +189,15 @@ function iconEventListeners() {
 
 function displayOnly(selection) {
   d3.select("#intro").style("display", "none");
-  d3.select("#text-container").style("display", "none");
-  d3.select("#settingsr").style("display", "none");
+  d3.select("#text_container").style("display", "none");
+  d3.select("#settings").style("display", "none");
   // add in everything that needs to be hidden
   d3.select("#tableOfContents").style("display", "none");
 
+  d3.selectAll("i").style("color", "gray");
+
   d3.select(selection).style("display", "block");
+  d3.select("#toggle-" + selection.substring(1)).style("color", "black");
 
 
 }
@@ -201,6 +205,8 @@ function displayOnly(selection) {
 function displayTable() {
   displayOnly("#tableOfContents");
   traverseAndUpdateTableHelper();
+  prepareText(heirarchy.tree[0].sections[0].id);
+  iconEventListeners();
 }
 
 function continueToSections() {
