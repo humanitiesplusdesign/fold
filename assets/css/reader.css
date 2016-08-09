@@ -70,11 +70,12 @@ display: none;
 
 #icon-controls i {
   margin-right: 20px;
-  transition: .1s;
+  transition: .3s;
+  color: gray;
 }
 
 #icon-controls i:hover {
-  color: black;
+  color: black !important ;
   cursor: pointer;
 }
 
@@ -184,6 +185,7 @@ input {
   display: none;
   margin: 0 auto;
   text-align: center;
+    font-family: "Roboto";
 }
 
 #table {
@@ -191,7 +193,7 @@ input {
 }
 
 #table h1, h2, h3, h4 {
-  font-family: "Roboto";
+
   font-weight: 300;
   cursor: pointer;
 }
