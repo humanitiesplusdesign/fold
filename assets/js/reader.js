@@ -205,8 +205,9 @@ function settingsEventListeners() {
       }
     }
     topicMap.forEach(function(key, value) {
-      d3.select("#topic-input-" + key).style("display", "block");
+      d3.select("#topic-input-" + key).style("display", "inline");
     });
+    d3.select("#ignore").style('display', "block");
 
   });
 
@@ -220,9 +221,32 @@ function settingsEventListeners() {
     }
 
     toneMap.forEach(function(key, value) {
-      d3.select("#tone-input-" + key).style("display", "block");
+      d3.select("#tone-input-" + key).style("display", "inline");
     });
   });
+
+  for (let i = 1; i < 5; i++) {
+    if (i != 4) {
+      $('#save-topic-' + i).on("click", function() {
+        topicMap.set(i, {"topic": d3.select("#topic-term-" + i).property("change"), "description": d3.select("#topic-des-" + i).property("value")});
+        d3.select(this).style("display", "none");
+        console.log(topicMap.get(i));
+      });
+      $('#topic-term-' + i + ", #topic-des-" + i).on("keydown", function() {
+        d3.select("#save-topic-" + i).style("display", "block");
+      });
+    }
+    $('#save-tone-' + i).on("click", function() {
+      toneMap.set(i, {"tone": d3.select("#tone-name-" + i).property("value"), "description": d3.select("#tone-des-" + i).property("value"), "color": d3.select("#color-" + i).property("value")});
+      console.log(toneMap.get(i));
+      d3.select(this).style("display", "none");
+    });
+
+    $('#tone-name-' + i + ", #tone-des-" + i + ", #color-" + i).on("change", function() {
+      d3.select("#save-tone-" + i).style("display", "block");
+    });
+
+  }
 }
 
 function displayOnlyThisPart(section) {

@@ -205,18 +205,24 @@ input {
 
 #structure {
   float: left;
-    width: 35%;
-    margin-left: 5%;
+    width: 40%;
 }
 
 #tone {
-  float: right;
+    float: right;
     width: 50%;
-    margin-right: 5%;
+
 }
 
+.tone-input, .topic-input {
+  height: 30px;
+  overflow-x: visible;
+  white-space: nowrap;
+}
+
+
 #settings {
-  width: 80%;
+  width: 100%;
   margin: 0 auto;
   font-family: "Roboto";
   text-align: center;
@@ -224,8 +230,14 @@ input {
 
 #settings input {
   padding: 8px;
+  margin-bottom: 4px;
   margin-right: 10px;
   border: 1px solid gray;
+}
+
+#ignore input {
+  margin-top: 15px;
+  border: 1px dotted lightgray;
 }
 
 #settings_container {
@@ -237,7 +249,7 @@ input {
 }
 
 .description {
-  opacity: .4;
+  opacity: .5;
   font-size: 14px;
 }
 
