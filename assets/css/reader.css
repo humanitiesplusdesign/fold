@@ -257,6 +257,12 @@ input {
   transition: 2s;
 }
 
+#highlight_tip {
+  position: absolute;
+  background-color: #f2f2f2;
+  font-family: "Roboto";
+}
+
 #instructions1 {
   text-align: center;
   margin-top: 30px;

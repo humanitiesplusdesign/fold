@@ -1,5 +1,4 @@
 /* To do:
-Create setting page
 Create the hovering color selection div
 */
 (function () {
@@ -161,7 +160,9 @@ function parseText(header, section) {
 
 }
 
-// does exactly that
+/*
+* Sets up the text view by creating separate divs for each h1 top level partition. By default, the first one is displayed.
+*/
 function prepareText(section) {
   for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
     d3.select("#text_container").append("div")
@@ -171,12 +172,17 @@ function prepareText(section) {
       .html(heirarchy.tree[0].sections[i].text);
   }
   d3.select("#text-h1-" + section.split(".")[1]).style("display", "block");
+  refreshHighlightTip();
+  setupHighlightTip();
 }
 
-
+/*
+* Adds event listeners to the main five icons
+*/
 function iconEventListeners() {
   $('#toggle-text_container').on("click", function() {
     displayOnly("#text_container");
+    refreshHighlightTip();
     // make sure to choose only approopriate partition
   });
   $('#toggle-annotate').on("click", function() {
@@ -194,6 +200,9 @@ function iconEventListeners() {
   });
 }
 
+/*
+* Adds event listeners to the add tone/topic buttons, to the fields, and to the save buttons.
+*/
 function settingsEventListeners() {
   $('#add-topic').on("click", function() {
     if (numTopics < 3) {
@@ -249,6 +258,31 @@ function settingsEventListeners() {
   }
 }
 
+function refreshHighlightTip() {
+  let tip = d3.select("#highlight_tip")
+  tip.html("");
+  tip.append("p").html("Apply a tone:");
+  toneMap.forEach(function(key, value) {
+    tip.append("div")
+      .attr("class", "tip-color-container")
+      .html(value.tone + ": " + "<i class='fa fa-paint-brush' aria-hidden='true' style='color: " + value.color +"!important;'></i>");
+  });
+}
+
+function setupHighlightTip() {
+  $("#text_container").on("click", function() {
+    $("#highlight_tip").css("top", event.pageY).css("left", event.pageX);
+    if (window.getSelection().toString() != "") {
+      $("#highlight_tip").css("display", "block"); 
+    } else {
+      $("#highlight_tip").css("display", "none");
+    }
+
+  })
+}
+/*
+* The write view displays only one h1 part at a time; this does that.
+*/
 function displayOnlyThisPart(section) {
   for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
     d3.select("#text-h1-" + i).style("display", "none");
@@ -256,6 +290,9 @@ function displayOnlyThisPart(section) {
   d3.select("#text-h1-" + section.split(".")[1]).style("display", "block");
 }
 
+/*
+* Essentially switches between pages/views by setting all of the div displays to none and then toggling the desired view to block
+*/
 function displayOnly(selection) {
   d3.select("#intro").style("display", "none");
   d3.select("#text_container").style("display", "none");
@@ -271,6 +308,9 @@ function displayOnly(selection) {
 
 }
 
+/*
+* Shows and creates the table based on the parsed document, prepares the text, and sets up event listeners
+*/
 function displayTable() {
   displayOnly("#tableOfContents");
   traverseAndUpdateTableHelper();
