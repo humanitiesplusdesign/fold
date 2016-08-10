@@ -1,9 +1,6 @@
 /* To do:
-Get parsing and ToC working decently well
 Create setting page
 Create the hovering color selection div
-
-
 */
 (function () {
 const heirarchy = {
@@ -20,6 +17,11 @@ let colorMap = d3.map();
 // for storing data to generate annulus rings later
 let annulusArray = [];
 let currentCircleArray = [];
+let highlight_tip;
+let toneMap = d3.map();
+let topicMap = d3.map();
+let numTopics = 0;
+let numTones = 0;
 
 initializeReader();
 
@@ -85,7 +87,7 @@ function initializeReader() {
         .style("margin-left", (level - 1) * 40 + "px")
         .html("<h" + level + " id='" + id + "'>" + id + " " +   name+ "</h" + level + ">")
         .on("click", function() {
-          prepareText(id);
+          displayOnlyThisPart(id);
           displayOnly("#text_container");
         });
       traverseAndUpdateTable(table, arrayOfSections[i].sections);
@@ -161,9 +163,14 @@ function parseText(header, section) {
 
 // does exactly that
 function prepareText(section) {
-  let result = heirarchy.tree[0].sections[section.split(".")[1]].text;
-  d3.select("#text_container")
-        .html(result);
+  for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
+    d3.select("#text_container").append("div")
+      .attr("id", "text-h1-" + i)
+      .attr("class", "text-h1")
+      .style("display", "none")
+      .html(heirarchy.tree[0].sections[i].text);
+  }
+  d3.select("#text-h1-" + section.split(".")[1]).style("display", "block");
 }
 
 
@@ -187,6 +194,44 @@ function iconEventListeners() {
   });
 }
 
+function settingsEventListeners() {
+  $('#add-topic').on("click", function() {
+    if (numTopics < 3) {
+      numTopics += 1;
+      topicMap.set(numTopics, {"topic": "", "description": ""});
+
+      if (numTopics === 3) {
+        d3.select("#add-topic").style("display", "none");
+      }
+    }
+    topicMap.forEach(function(key, value) {
+      d3.select("#topic-input-" + key).style("display", "block");
+    });
+
+  });
+
+  $('#add-tone').on("click", function() {
+    if (numTones < 4) {
+      numTones += 1;
+      toneMap.set(numTones, {"tone": "", "description": "", "color": ""});
+      if (numTones === 4) {
+        d3.select("#add-tone").style("display", "none");
+      }
+    }
+
+    toneMap.forEach(function(key, value) {
+      d3.select("#tone-input-" + key).style("display", "block");
+    });
+  });
+}
+
+function displayOnlyThisPart(section) {
+  for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
+    d3.select("#text-h1-" + i).style("display", "none");
+  }
+  d3.select("#text-h1-" + section.split(".")[1]).style("display", "block");
+}
+
 function displayOnly(selection) {
   d3.select("#intro").style("display", "none");
   d3.select("#text_container").style("display", "none");
@@ -207,33 +252,7 @@ function displayTable() {
   traverseAndUpdateTableHelper();
   prepareText(heirarchy.tree[0].sections[0].id);
   iconEventListeners();
-}
-
-function continueToSections() {
-  partitioning = false;
-  d3.select("#instructions1").style("display", "none");
-  d3.select("#instructions2").style("display", "none");
-  d3.select("#instructions2-5").style("display", "block");
-  partitionListeners();
-
-  if (!document.getElementById("text-div-0-section-0")) {
-    d3.select("#text-div-" + 0).html("").append("div")
-      .attr("id", "text-div-" + 0 + "-section-" + 0)
-      .attr("class", "section")
-      .html(heirarchy.tree[0].sections[0].text);
-  }
-}
-
-
-
-function continueToHighlighting() {
-  newInstructions();
-  $("body").on("keydown", function() {
-    if (event.which === 17) {
-      //testing
-      console.log(heirarchy.tree);
-    }
-  })
+  settingsEventListeners();
 }
 
 // sets up highlighting abilities and category/color selection
@@ -246,8 +265,6 @@ function newInstructions() {
 
   highlightEventListeners();
   annulusDisplayListeners();
-
-  updateTable();
 
   d3.select("#control_container").append("svg")
   .attr("id", "svg_control_container");

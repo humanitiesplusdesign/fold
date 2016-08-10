@@ -34,18 +34,27 @@
   <div id="left_column"></div>
   <div id="text_container"></div>
   <div id="settings" style="display: none">
-    <h2>Structure</h2>
-      Topic/Category 1: <input type='text'><br>Color: <input type='text'>
-      Topic/Category 2: <input type='text'><br>Color: <input type='text'>
-      Topic/Category 3: <input type='text'><br>Color: <input type='text'>
-      Ignored: <input type='text'><br>Color: faded out
-      <h2>Tone</h2>
-      Category 1: <input type='text'><br>Choose Highlight Color: <input type='text'>
-      Category 2: <input type='text'><br>Choose Highlight Color: <input type='text'>
-      Category 3: <input type='text'><br>Choose Highlight Color: <input type='text'>
-      Category 4: <input type='text'><br>Choose Highlight Color: <input type='text'>
+    <h3>SETTINGS</h3>
+    <p class="description">Create topics to arrange the document in columns. Create categories to add color to your document.</p>
+
+    <div id="structure">
+    <h2>Structure (topics)</h2><p class="description">maximum of 3</p>
+    <i id="add-topic" class="fa fa-plus" aria-hidden="true"></i>
+      <div class="topic-input" id="topic-input-1"><input type='text' placeholder="Term"><input type='text' placeholder="Description (not required)"></div>
+      <div class="topic-input" id="topic-input-2"><input type='text' placeholder="Term"><input type='text' placeholder="Description (not required)"></div>
+      <div class="topic-input" id="topic-input-3"><input type='text' placeholder="Term"><input type='text' placeholder="Description (not required)"></div>
+      <div class="topic-input" id="ignore"><input type='text' placeholder="Ignore" readonly><input type='text' placeholder="Document text not tagged with a topic." readonly></div>
+    </div>
+      <div id="tone">
+      <h2>Tone (categories)</h2> <p class="description">maximum of 4</p>
+      <i id="add-tone" class="fa fa-plus" aria-hidden="true"></i>
+      <div class="tone-input" id="tone-input-1"><input type='color'><input type='text' placeholder="tone name"><input type='text' placeholder="Description (not required)"></div>
+      <div class="tone-input" id="tone-input-2"><input type='color'><input type='text' placeholder="tone name"><input type='text' placeholder="Description (not required)"></div>
+      <div class="tone-input" id="tone-input-3"><input type='color'><input type='text' placeholder="tone name"><input type='text' placeholder="Description (not required)"></div>
+      <div class="tone-input" id="tone-input-4"><input type='color'><input type='text' placeholder="tone name"><input type='text' placeholder="Description (not required)"></div>
 
 
+    </div>
   </div>
   <div id="control_container_before">
       <div id="instructions3" class="instructions">

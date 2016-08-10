@@ -149,6 +149,10 @@ input {
   white-space: pre-wrap;
 }
 
+.text-h1 {
+  color: black;
+}
+
  #control_container {
   position: fixed;
   width: 500px;
@@ -198,6 +202,44 @@ input {
   cursor: pointer;
 }
 
+
+#structure {
+  float: left;
+    width: 35%;
+    margin-left: 5%;
+}
+
+#tone {
+  float: right;
+    width: 50%;
+    margin-right: 5%;
+}
+
+#settings {
+  width: 80%;
+  margin: 0 auto;
+  font-family: "Roboto";
+  text-align: center;
+}
+
+#settings input {
+  padding: 8px;
+  margin-right: 10px;
+  border: 1px solid gray;
+}
+
+#settings_container {
+  text-align: left;
+}
+
+.topic-input, .tone-input {
+  display: none;
+}
+
+.description {
+  opacity: .4;
+  font-size: 14px;
+}
 
 .instructions {
   transition: 2s;
