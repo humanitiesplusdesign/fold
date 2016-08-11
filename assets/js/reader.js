@@ -21,6 +21,7 @@ let toneMap = d3.map();
 let topicMap = d3.map();
 let numTopics = 0;
 let numTones = 0;
+let current_range;
 
 initializeReader();
 
@@ -223,7 +224,7 @@ function settingsEventListeners() {
   $('#add-tone').on("click", function() {
     if (numTones < 4) {
       numTones += 1;
-      toneMap.set(numTones, {"tone": "", "description": "", "color": ""});
+      toneMap.set(numTones, {"tone": "", "description": "", "color": "", "number": ""});
       if (numTones === 4) {
         d3.select("#add-tone").style("display", "none");
       }
@@ -246,7 +247,7 @@ function settingsEventListeners() {
       });
     }
     $('#save-tone-' + i).on("click", function() {
-      toneMap.set(i, {"tone": d3.select("#tone-name-" + i).property("value"), "description": d3.select("#tone-des-" + i).property("value"), "color": d3.select("#color-" + i).property("value")});
+      toneMap.set(i, {"tone": d3.select("#tone-name-" + i).property("value"), "description": d3.select("#tone-des-" + i).property("value"), "color": d3.select("#color-" + i).property("value"), "number": "0"});
       console.log(toneMap.get(i));
       d3.select(this).style("display", "none");
     });
@@ -259,21 +260,30 @@ function settingsEventListeners() {
 }
 
 function refreshHighlightTip() {
-  let tip = d3.select("#highlight_tip")
+  let tip = d3.select("#highlight_tip");
   tip.html("");
   tip.append("p").html("Apply a tone:");
   toneMap.forEach(function(key, value) {
     tip.append("div")
       .attr("class", "tip-color-container")
+      .attr("id", "tip-color-container-" + key)
       .html(value.tone + ": " + "<i class='fa fa-paint-brush' aria-hidden='true' style='color: " + value.color +"!important;'></i>");
+
+      $("#tip-color-container-" + key).on("click", function() {
+        event.preventDefault();
+        console.log("clicked " + key);
+        highlight(key);
+      })
+
   });
 }
 
 function setupHighlightTip() {
-  $("#text_container").on("click", function() {
-    $("#highlight_tip").css("top", event.pageY).css("left", event.pageX);
-    if (window.getSelection().toString() != "") {
-      $("#highlight_tip").css("display", "block"); 
+  $("#text_container").on("mouseup", function() {
+    if (window.getSelection().toString().length > 1) {
+      current_range = window.getSelection().getRangeAt(0);
+      $("#highlight_tip").css("display", "block");
+      $("#highlight_tip").css("top", event.pageY - 40).css("left", event.pageX );
     } else {
       $("#highlight_tip").css("display", "none");
     }
@@ -317,21 +327,6 @@ function displayTable() {
   prepareText(heirarchy.tree[0].sections[0].id);
   iconEventListeners();
   settingsEventListeners();
-}
-
-// sets up highlighting abilities and category/color selection
-function newInstructions() {
-  d3.select("#instructions2-5").style("display", "none");
-  d3.select("#instructions3").style("display", "block");
-
-  activeSection = heirarchy.tree[0].sections[0];
-  displayThisSection(0,0);
-
-  highlightEventListeners();
-  annulusDisplayListeners();
-
-  d3.select("#control_container").append("svg")
-  .attr("id", "svg_control_container");
 }
 
 function annulusDisplayListeners() {
@@ -393,44 +388,6 @@ function addNewCategoryToSection(section) {
   showCategoriesOfSection(section);
 }
 
-function showCategoriesOfSection(section) {
-  d3.select("#current_colors").html("");
-  d3.select("#svg_control_container").html("");
-
-  let controlsHTML = "";
-  let position = 15;
-  let index = 1;
-  heirarchy.categories.forEach(function (key, value) {
-    let thisControl = "<p id=" + key + ">" + key + "<input type='radio' name='color' id=check_" + index + " value=" + key + ">" + "</p>";
-    controlsHTML += thisControl;
-    d3.select("#current_colors").html(controlsHTML);
-    d3.select("#svg_control_container").append("circle")
-      .attr("id", value + key)
-      .attr("fill", value)
-      .attr("r", 10)
-      .attr("cx", 20)
-      .attr("cy", position)
-      .on("click", function() {
-        heirarchy.categories.remove(key);
-        for (let i = 0; i < heirarchy.tree.length; i++) {
-          for (let j = 0; j < heirarchy.tree[i].sections.length; j++) {
-            deleteCategoryOfSection(heirarchy.tree[i].sections[j], key);
-          }
-        }
-
-        //removes highlights of this color
-        let spans = d3.selectAll("span");
-        spans.each(function (d,i) {
-          if (this.style.backgroundColor == value) $("#" + this.id).contents().unwrap();
-        })
-
-        showCategoriesOfSection(section);
-        updateTable();
-      });
-    position += 60;
-    index += 1;
-  });
-}
 
 function deleteCategoryOfSection(section, category) {
     for (let i = 0; i < 2; i++) {
@@ -444,70 +401,24 @@ function deleteCategoryOfSection(section, category) {
     }
 }
 
-function highlight() {
-  let category = $('input[name=color]:checked').val();
-  let color = heirarchy.categories.get($('input[name=color]:checked').val());
+function highlight(key) {
+    let category = toneMap.get(key).tone;
+    let desc = toneMap.get(key).description;
+    let color = toneMap.get(key).color;
+    let index = toneMap.get(key).number;
 
-    // get the selected text, put a span with appropriate id around it
-    let sel = window.getSelection();
-    let selText = sel.toString();
-    let range = sel.getRangeAt(0);
+      // get the selected text, put a span with appropriate id around it
+      toneMap.set(key, {"tone": category, "description": desc, "color": color, "number": index + 1});
     let newNode = document.createElement("span");
-    let spanID = color + category + current_index;
+    let spanID = color + "-" + category + "-" + index;
     newNode.setAttribute('id', spanID);
     newNode.setAttribute('style', "background-color: " + color);
     newNode.setAttribute('class', "highlightSpan");
-    range.surroundContents(newNode);
-
-    oRange = sel.getRangeAt(0); //get the text range
-    oRect = oRange.getBoundingClientRect();
-
-    let placement = oRect.top + window.scrollY;
-    let this_index = current_index;
-
-    document.getElementById(spanID).addEventListener("click", function(){
-      removeThisHighlight(this_index, spanID);});
-    // update the array for building rings
-    let segment = {
-        "index": current_index,
-        "text":  selText, //contents of line-height
-        "category": category, //used to determine colors
-        "color": color, /// unecessary but makes things easier
-        "placement": placement,
-        "comment": "",
-      };
-    current_index += 1;
-
-    activeSection.segments.push(segment);
-    annulusPrepForSection(activeSection);
-    updateTable();
-}
-
-// to be finished - based on topic (?)
-function separateIntoColumns() {
-  d3.select("#text_container").html("");
-  let top = 0;
-  for (let i = 0; i < jsonDB.length; i++) {
-    d3.select("#text_container").append("div")
-      .attr("id", "column_text_" + i)
-      .style("position", "absolute")
-      .style("top", function () {
-        if (top === 0) return jsonDB[i].placement + "px";
-        return (top - 5) + "px";
-      })
-      .style("left", function() {
-        if (i % 2 === 0) {
-          return "200px";
-        } else {
-          return "505px";
-        }
-      })
-      .html(jsonDB[i].text)
-      .style("width", "295px")
-      .style("border-left", "1px solid " + jsonDB[i].color);
-
-      top = document.getElementById("column_text_" + i).getBoundingClientRect().bottom;
+    current_range.surroundContents(newNode);
   }
+
+// to be totally redone
+function separateIntoColumns() {
 
 }
 
@@ -519,7 +430,6 @@ function removeThisHighlight(number, spanID) {
           activeSection.segments.splice(i, 1);
         }
     }
-    updateTable();
 }
 
 function displayAnnulus() {
