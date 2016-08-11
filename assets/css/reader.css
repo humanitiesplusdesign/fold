@@ -124,6 +124,7 @@ display: none;
 
 .tip-color-container {
   float: left;
+  cursor: pointer;
 }
 
 

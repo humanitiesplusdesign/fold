@@ -1,5 +1,5 @@
 /* To do:
-Create the hovering color selection div
+
 */
 (function () {
 const heirarchy = {
@@ -205,6 +205,7 @@ function iconEventListeners() {
 * Adds event listeners to the add tone/topic buttons, to the fields, and to the save buttons.
 */
 function settingsEventListeners() {
+  // plus button adds a new topic and puts it in the map
   $('#add-topic').on("click", function() {
     if (numTopics < 3) {
       numTopics += 1;
@@ -221,6 +222,7 @@ function settingsEventListeners() {
 
   });
 
+  // plus button adds a new tone and adds it to the map
   $('#add-tone').on("click", function() {
     if (numTones < 4) {
       numTones += 1;
@@ -235,6 +237,7 @@ function settingsEventListeners() {
     });
   });
 
+  // adds listeners to each of the save buttons
   for (let i = 1; i < 5; i++) {
     if (i != 4) {
       $('#save-topic-' + i).on("click", function() {
@@ -247,11 +250,19 @@ function settingsEventListeners() {
       });
     }
     $('#save-tone-' + i).on("click", function() {
+      if (toneMap.get(i).color != d3.select("#color-" + i).property("value")) {
+        let spans = d3.selectAll("span");
+        d3.selectAll("span").each(function(d, j) {
+          if ("#" + this.id.split("-")[0] == toneMap.get(i).color) {
+            d3.select(this).style("background-color", d3.select("#color-" + i).property("value"));
+          }
+        });
+      }
       toneMap.set(i, {"tone": d3.select("#tone-name-" + i).property("value"), "description": d3.select("#tone-des-" + i).property("value"), "color": d3.select("#color-" + i).property("value"), "number": "0"});
-      console.log(toneMap.get(i));
       d3.select(this).style("display", "none");
     });
 
+    //makes save button visible whenever a field is changed
     $('#tone-name-' + i + ", #tone-des-" + i + ", #color-" + i).on("change", function() {
       d3.select("#save-tone-" + i).style("display", "block");
     });
@@ -271,7 +282,6 @@ function refreshHighlightTip() {
 
       $("#tip-color-container-" + key).on("click", function() {
         event.preventDefault();
-        console.log("clicked " + key);
         highlight(key);
       })
 
@@ -410,11 +420,17 @@ function highlight(key) {
       // get the selected text, put a span with appropriate id around it
       toneMap.set(key, {"tone": category, "description": desc, "color": color, "number": index + 1});
     let newNode = document.createElement("span");
-    let spanID = color + "-" + category + "-" + index;
+    let spanID = color.substring(1) + "-" + category + "-" + index;
     newNode.setAttribute('id', spanID);
-    newNode.setAttribute('style', "background-color: " + color);
+  //  newNode.setAttribute('style', "background-color: " + color);
     newNode.setAttribute('class', "highlightSpan");
     current_range.surroundContents(newNode);
+
+    $("#" + spanID).css("background-color", color);
+
+    $("#" + spanID).on("dblclick", function() {
+      removeThisHighlight(spanID, key);
+    });
   }
 
 // to be totally redone
@@ -423,13 +439,14 @@ function separateIntoColumns() {
 }
 
 //removes the highlighted text given an index and an id
-function removeThisHighlight(number, spanID) {
+function removeThisHighlight(spanID, key) {
     $("#" + spanID).contents().unwrap();
-    for (let i = 0; i < activeSection.segments.length; i++) {
-        if (activeSection.segments[i].index == number) {
-          activeSection.segments.splice(i, 1);
-        }
-    }
+    let category = toneMap.get(key).tone;
+    let desc = toneMap.get(key).description;
+    let color = toneMap.get(key).color;
+    let index = toneMap.get(key).number;
+    toneMap.set(key, {"tone": category, "description": desc, "color": color, "number": index - 1});
+    // later - delete from wherever it is stored
 }
 
 function displayAnnulus() {
