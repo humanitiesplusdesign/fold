@@ -151,6 +151,7 @@ input {
   padding: 20px;
   transition: 1s;
   font-family: "Roboto";
+  font-size: 1.6vw; 
   white-space: pre-wrap;
 }
 
