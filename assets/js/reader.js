@@ -1,4 +1,20 @@
 /* To do:
+  1 get annotations functional
+  2 implement tone highlighting
+      2.1 paragraph separation by tone
+  3 side graphic based on tone
+
+
+  how to detect if span overlaps =
+      count number of <span> and number of </span> in selected text
+      if the counts are not identical, throw an error
+      otherwise, fine
+
+      one solution -
+      instead of throw an error, remove the first <span> and insert a </span> before the selection (or vice versa in the case of ending chopping off)
+  4(?) grid view which can alternate between linear and annulus visualizations
+
+
 
 */
 (function () {
@@ -17,11 +33,13 @@ let colorMap = d3.map();
 let annulusArray = [];
 let currentCircleArray = [];
 let highlight_tip;
+let topic_tip;
 let toneMap = d3.map();
 let topicMap = d3.map();
 let numTopics = 0;
 let numTones = 0;
 let current_range;
+let activePart = 1;
 
 initializeReader();
 
@@ -87,7 +105,7 @@ function initializeReader() {
         .style("margin-left", (level - 1) * 40 + "px")
         .html("<h" + level + " id='" + id + "'>" + id + " " +   name+ "</h" + level + ">")
         .on("click", function() {
-          displayOnlyThisPart(id);
+          activePart = id.split(".")[1];
           displayOnly("#text_container");
         });
       traverseAndUpdateTable(table, arrayOfSections[i].sections);
@@ -150,7 +168,35 @@ function parseText(header, section) {
           "text": textArray[i].text,
           "sections": [],
           "level": section.level + 1,
-          "header":  header + "#"
+          "header":  header + "#",
+          "data": {
+            "annotations": [],
+              /*
+              {
+              "text"
+              "start"
+              "end"
+              }
+              */
+            "highlights": [],
+            /*
+            {
+            "key"
+            "text"
+            "start"
+            "end"
+            }
+            */
+            "topics": []
+            /*
+            {
+            "key"
+            "text"
+            "start"
+            "end"
+            }
+            */
+          }
         });
     }
     //recursively call on each section
@@ -173,8 +219,10 @@ function prepareText(section) {
       .html(heirarchy.tree[0].sections[i].text);
   }
   d3.select("#text-h1-" + section.split(".")[1]).style("display", "block");
+
   refreshHighlightTip();
-  setupHighlightTip();
+  setupTooltips();
+
 }
 
 /*
@@ -251,6 +299,7 @@ function settingsEventListeners() {
     }
     $('#save-tone-' + i).on("click", function() {
       if (toneMap.get(i).color != d3.select("#color-" + i).property("value")) {
+        console.log("current_color is " +toneMap.get(i).color +" , new color should be "  + d3.select("#color-" + i).property("value"));
         let spans = d3.selectAll("span");
         d3.selectAll("span").each(function(d, j) {
           if ("#" + this.id.split("-")[0] == toneMap.get(i).color) {
@@ -284,30 +333,72 @@ function refreshHighlightTip() {
         event.preventDefault();
         highlight(key);
       })
+  });
 
+  let tip2 = d3.select("#topic_tip");
+  tip2.html("");
+  topicMap.forEach(function(key, value) {
+    tip2.append("div")
+      .attr("class", "tip-topic-container")
+      .attr("id", "tip-topic-container-" + key)
+      .html(value.topic);
+
+        $("#tip-color-container-" + key).on("click", function() {
+          event.preventDefault();
+          //applyTopic(key);
+        })
   });
 }
 
-function setupHighlightTip() {
+
+
+function setupTooltips() {
+
   $("#text_container").on("mouseup", function() {
     if (window.getSelection().toString().length > 1) {
       current_range = window.getSelection().getRangeAt(0);
-      $("#highlight_tip").css("display", "block");
-      $("#highlight_tip").css("top", event.pageY - 40).css("left", event.pageX );
+
+      $("#text_container_left").css("background-color", "gray");
+
+      $("#highlight_tip").css("display", "block")
+        .css("top", event.pageY - 40)
+        .css("left", event.pageX);
     } else {
       $("#highlight_tip").css("display", "none");
+      $("#text_container_left").css("background-color", "white");
     }
+  });
 
-  })
+    $("#text_container_left").on("mouseover", function() {
+      $("#topic_tip").css("display", "block")
+        .css("top", event.pageY - 40)
+        .css("left", event.pageX);
+    });
+
+    $("#text_container_right").on("click", function() {
+      let top = event.pageY + $('body').scrollTop();
+      createAnnotation(activePart, top);
+    });
 }
+
+
 /*
 * The write view displays only one h1 part at a time; this does that.
 */
-function displayOnlyThisPart(section) {
+function displayOnlyThisPart(part) {
   for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
     d3.select("#text-h1-" + i).style("display", "none");
-  }
-  d3.select("#text-h1-" + section.split(".")[1]).style("display", "block");
+    }
+  d3.select("#text-h1-" + part).style("display", "block");
+  d3.selectAll(".annotation").style("display", function() {
+    console.log(activePart)
+    console.log(d3.select(this).attr("id"));
+    if (d3.select(this).attr("id").split("-")[1] == activePart) {
+      return "block";
+    } else {
+      return "none";
+    }
+  })
 }
 
 /*
@@ -325,7 +416,17 @@ function displayOnly(selection) {
   d3.select(selection).style("display", "block");
   d3.select("#toggle-" + selection.substring(1)).style("color", "black");
 
-
+  if (selection == "#text_container") {
+    $("#text_container_right").css("height", $("#text_container").height());
+    $("#text_container_left").css("height",  $("#text_container").height());
+    $("#text_container_right").css("display", "block");
+    $("#text_container_left").css("display", "block");
+    displayOnlyThisPart(activePart);
+  } else {
+    $("#text_container_right").css("display", "none");
+    $("#text_container_left").css("display", "none");
+    d3.selectAll(".annotation").style("display", "none");
+  }
 }
 
 /*
@@ -339,78 +440,9 @@ function displayTable() {
   settingsEventListeners();
 }
 
-function annulusDisplayListeners() {
-  document.getElementById("back").addEventListener("click", function() {
-    d3.select("#annulus-display").style("display", "none");
-    d3.select("#instructions3").style("display", "block");
-    d3.select("#svg_control_container").style("display", "block");
-    reader_svg.remove();
-  });
-  document.getElementById("save").addEventListener("click", function() {
-      d3.select("#saveform").style("opacity", 1);
-      let name = d3.select("#save_name").property("value");
-      let newName = true;
-      for (let i = 0; i < annulusArray.length; i++) {
-        if (annulusArray[i].name === name) newName = false;
-      }
-      if (name != "" && newName === true) {
-          saveAnnulus(name);
-          d3.select("#saveform").style("opacity", 0);
-          $("#save").prop("disabled", true);
-        };
-  });
-  document.getElementById("grid").addEventListener("click", function () {gridView()})
-}
-
-
-//only call when these buttons exist
-function highlightEventListeners() {
-  document.getElementById("sub").addEventListener("click", function(){addNewCategoryToSection(activeSection)});
-  document.getElementById("highlight").addEventListener("click", function(){highlight()});
-  document.getElementById("annulus").addEventListener("click", function(){
-    displayAnnulus();
-  //separateIntoColumns();
-  });
-  document.body.onkeyup = function(e){
-    if (window.getSelection().toString() != "") {
-        if (e.keyCode == 49 && heirarchy.categories.size() > 0) {
-          $("#check_" + 1).prop("checked", true);
-          highlight();
-        }
-        if (e.keyCode == 50 && heirarchy.categories.size() > 1) {
-          $("#check_" + 2).prop("checked", true);
-          highlight();
-        }
-        if (e.keyCode == 51 && heirarchy.categories.size() > 2) {
-          $("#check_" + 3).prop("checked", true);
-          highlight();
-        }
-    }
-  }
-}
-
-// adds a new category with corresponding color for highlighting
-function addNewCategoryToSection(section) {
-  let colorH = d3.select("#colorH").property("value");
-  let categoryH = d3.select("#categoryH").property("value");
-
-  heirarchy.categories.set(categoryH, colorH);
-  showCategoriesOfSection(section);
-}
-
-
-function deleteCategoryOfSection(section, category) {
-    for (let i = 0; i < 2; i++) {
-      let spliceCount = 0;
-      for (let j = 0; j < section.segments.length; j++) {
-        if (section.segments[j - spliceCount].category ==  category) {
-          section.segments.splice(j - spliceCount, 1);
-          spliceCount++;
-        }
-      }
-    }
-}
-
+/*
+* Applies the selected color to the selected text
+*/
 function highlight(key) {
     let category = toneMap.get(key).tone;
     let desc = toneMap.get(key).description;
@@ -435,7 +467,19 @@ function highlight(key) {
 
 // to be totally redone
 function separateIntoColumns() {
-
+  d3.selectAll("span").each(function() {
+    let spanClass = d3.select(this).class().split("-")
+    if (spanClass[0] == "topic") {
+      if (spanClass[1] == 1) {
+        // pan left
+      } else if (spanClass[1] == 2) {
+        // pan center
+      } else if (spanClass[1] == 3) {
+        // pan right
+      }
+    }
+  });
+    // temporarily wrap all other text in ignore spans
 }
 
 //removes the highlighted text given an index and an id
@@ -448,6 +492,58 @@ function removeThisHighlight(spanID, key) {
     toneMap.set(key, {"tone": category, "description": desc, "color": color, "number": index - 1});
     // later - delete from wherever it is stored
 }
+
+/*
+* Creaes an annotation
+*/
+function createAnnotation(part, top) {
+  let annotation = d3.select("#right_column").append("div")
+    .attr("class", "annotation")
+    .attr("id", "annotation-" + part + "-" + top)
+    .style("top", top + "px");
+
+
+  let text = annotation.append("div")
+    .attr("id", "annotation-" + part + "-" + top + "-text")
+    .html("Click 'Edit' to write in this annotation");
+
+  //save/update
+  annotation.append("button")
+    .attr("id", "annotation-" + part + "-" + top + "-save")
+    //hide when not editing
+    .style("display", "none")
+    .html("Save")
+    .on("click", function () {
+        text.attr("contenteditable", false)
+        .style("color", "black");
+        d3.select("#annotation-" + part + "-" + top + "-save").style("display", "none");
+        d3.select("#annotation-" + part + "-" + top + "-edit").style("display", "block");
+
+      //if annotations are stored anywhere, update the data for this annotation
+    });
+
+    //edit
+  annotation.append("button")
+    .attr("id", "annotation-" + part + "-" + top + "-edit")
+    .html("Edit")
+    .on("click", function () {
+      d3.select("#annotation-" + part + "-" + top + "-save").style("display", "block");
+      d3.select("#annotation-" + part + "-" + top + "-edit").style("display", "none");
+      text.attr("contenteditable", true)
+      .style("color", "blue");
+      //make the div contenteditable
+    });
+
+    //delete
+  annotation.append("button")
+    .attr("id", "annotation-" + part + "-" + top + "-delete")
+    .html("Delete")
+    .on("click", function () {
+      annotation.remove();
+    });
+
+}
+
 
 function displayAnnulus() {
   d3.select("#instructions3").style("display", "none");
@@ -620,32 +716,10 @@ function gridView() {
       });
   }
 
-  function setupBlinkCursor() {
-      blinkCursor = d3.select("#text_container").append("span")
-        .attr("id", "blink")
-        .text("|")
-        .style("visibility", "hidden")
-        .style("position", "absolute");
-  }
 
+  /*
+    rectangle visualization:
 
-
-  /////
-/*
-  createLinearVisualization(part) {
-    d3.select("#linvis").html("");
-    let rectArray = getRectanglesHelper(part);
-
-  }
-
-  getRectanglesHelper(part) {
-    let rectArray = [];
-  }
-
-  getRectanglesOf() {
-
-  }
-*/
-
+  */
 
 })();
