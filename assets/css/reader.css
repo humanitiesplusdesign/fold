@@ -284,10 +284,16 @@ input[type="color"] {
   transition: 2s;
 }
 
-#highlight_tip {
+#highlight_tip, #topic_tip {
   position: absolute;
   background-color: #f2f2f2;
   font-family: "Roboto";
+  
+}
+
+.tip_topic_container:hover {
+  background-color: lightblue;
+  cursor: pointer;
 }
 
 #instructions1 {

@@ -1,5 +1,5 @@
 /* To do:
-  1 get annotations functional
+
   2 implement tone highlighting
       2.1 paragraph separation by tone
   3 side graphic based on tone
@@ -232,11 +232,27 @@ function iconEventListeners() {
   $('#toggle-text_container').on("click", function() {
     displayOnly("#text_container");
     refreshHighlightTip();
+    $("#text_container_right").css("height", $("#text_container").height());
+    $("#text_container_left").css("height",  $("#text_container").height());
+    displayOnlyThisPart(activePart);
+
+    // account for missing sidebar margins
     // make sure to choose only approopriate partition
   });
   $('#toggle-annotate').on("click", function() {
-    displayOnly("#settings");
+    displayOnly("#text_container");
+    $("#text_container_right").css("height", $("#text_container").height());
+    $("#text_container_left").css("height",  $("#text_container").height());
+    $("#text_container_right").css("display", "block");
+    $("#text_container_left").css("display", "block");
+    d3.select("#left_column").style("display", "block");
+    d3.select("#right_column").style("display", "block");
+    displayOnlyThisPart(activePart);
+    displayAnnotationsOfPart(activePart);
     //display other stuff
+
+    d3.selectAll("i").style("color", "gray");
+    d3.select("#toggle-annotate").style("color", "black");
   });
   $('#toggle-tableOfContents').on("click", function() {
     displayOnly("#tableOfContents");
@@ -289,7 +305,7 @@ function settingsEventListeners() {
   for (let i = 1; i < 5; i++) {
     if (i != 4) {
       $('#save-topic-' + i).on("click", function() {
-        topicMap.set(i, {"topic": d3.select("#topic-term-" + i).property("change"), "description": d3.select("#topic-des-" + i).property("value")});
+        topicMap.set(i, {"topic": d3.select("#topic-term-" + i).property("value"), "description": d3.select("#topic-des-" + i).property("value")});
         d3.select(this).style("display", "none");
         console.log(topicMap.get(i));
       });
@@ -338,10 +354,14 @@ function refreshHighlightTip() {
   let tip2 = d3.select("#topic_tip");
   tip2.html("");
   topicMap.forEach(function(key, value) {
+    console.log(value);
     tip2.append("div")
       .attr("class", "tip-topic-container")
       .attr("id", "tip-topic-container-" + key)
-      .html(value.topic);
+      .html(value.topic)
+      .on("click", function() {
+        highlightTopic(key);
+      });
 
         $("#tip-color-container-" + key).on("click", function() {
           event.preventDefault();
@@ -390,10 +410,11 @@ function displayOnlyThisPart(part) {
     d3.select("#text-h1-" + i).style("display", "none");
     }
   d3.select("#text-h1-" + part).style("display", "block");
+}
+
+function displayAnnotationsOfPart(part) {
   d3.selectAll(".annotation").style("display", function() {
-    console.log(activePart)
-    console.log(d3.select(this).attr("id"));
-    if (d3.select(this).attr("id").split("-")[1] == activePart) {
+    if (d3.select(this).attr("id").split("-")[1] == part) {
       return "block";
     } else {
       return "none";
@@ -410,22 +431,22 @@ function displayOnly(selection) {
   d3.select("#settings").style("display", "none");
   // add in everything that needs to be hidden
   d3.select("#tableOfContents").style("display", "none");
+  d3.select("#left_column").style("display", "none");
+  d3.select("#right_column").style("display", "none");
 
   d3.selectAll("i").style("color", "gray");
+
+  $("#text_container_right").css("display", "none");
+  $("#text_container_left").css("display", "none");
+  d3.selectAll(".annotation").style("display", "none");
 
   d3.select(selection).style("display", "block");
   d3.select("#toggle-" + selection.substring(1)).style("color", "black");
 
   if (selection == "#text_container") {
-    $("#text_container_right").css("height", $("#text_container").height());
-    $("#text_container_left").css("height",  $("#text_container").height());
-    $("#text_container_right").css("display", "block");
-    $("#text_container_left").css("display", "block");
-    displayOnlyThisPart(activePart);
+
   } else {
-    $("#text_container_right").css("display", "none");
-    $("#text_container_left").css("display", "none");
-    d3.selectAll(".annotation").style("display", "none");
+
   }
 }
 
@@ -465,6 +486,15 @@ function highlight(key) {
     });
   }
 
+function highlightTopic(key) {
+  let spanClass = "topic-" + key
+  let newNode = document.createElement("span");
+//  newNode.setAttribute('style', "background-color: " + color);
+  newNode.setAttribute('class', "highlightSpan");
+  current_range.surroundContents(newNode);
+  console.log("topic " + key + " added");
+}
+
 // to be totally redone
 function separateIntoColumns() {
   d3.selectAll("span").each(function() {
@@ -478,6 +508,8 @@ function separateIntoColumns() {
         // pan right
       }
     }
+    d3.selectAll(".topic-1").style("left", "0px");
+
   });
     // temporarily wrap all other text in ignore spans
 }
@@ -518,8 +550,6 @@ function createAnnotation(part, top) {
         .style("color", "black");
         d3.select("#annotation-" + part + "-" + top + "-save").style("display", "none");
         d3.select("#annotation-" + part + "-" + top + "-edit").style("display", "block");
-
-      //if annotations are stored anywhere, update the data for this annotation
     });
 
     //edit
@@ -531,7 +561,6 @@ function createAnnotation(part, top) {
       d3.select("#annotation-" + part + "-" + top + "-edit").style("display", "none");
       text.attr("contenteditable", true)
       .style("color", "blue");
-      //make the div contenteditable
     });
 
     //delete
@@ -541,7 +570,6 @@ function createAnnotation(part, top) {
     .on("click", function () {
       annotation.remove();
     });
-
 }
 
 
