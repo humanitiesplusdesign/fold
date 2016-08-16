@@ -288,7 +288,12 @@ input[type="color"] {
   position: absolute;
   background-color: #f2f2f2;
   font-family: "Roboto";
-  
+
+}
+
+.tip-color-container:hover {
+  cursor: pointer;
+  background-color: lightblue;
 }
 
 .tip_topic_container:hover {

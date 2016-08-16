@@ -126,7 +126,6 @@ function parseTextHelper(result) {
      "header": header,
    })
    parseText(header, heirarchy.tree[0]);
-   console.log(heirarchy.tree[0]);
 }
 
 /*
@@ -307,7 +306,6 @@ function settingsEventListeners() {
       $('#save-topic-' + i).on("click", function() {
         topicMap.set(i, {"topic": d3.select("#topic-term-" + i).property("value"), "description": d3.select("#topic-des-" + i).property("value")});
         d3.select(this).style("display", "none");
-        console.log(topicMap.get(i));
       });
       $('#topic-term-' + i + ", #topic-des-" + i).on("keydown", function() {
         d3.select("#save-topic-" + i).style("display", "block");
@@ -315,7 +313,6 @@ function settingsEventListeners() {
     }
     $('#save-tone-' + i).on("click", function() {
       if (toneMap.get(i).color != d3.select("#color-" + i).property("value")) {
-        console.log("current_color is " +toneMap.get(i).color +" , new color should be "  + d3.select("#color-" + i).property("value"));
         let spans = d3.selectAll("span");
         d3.selectAll("span").each(function(d, j) {
           if ("#" + this.id.split("-")[0] == toneMap.get(i).color) {
@@ -338,12 +335,18 @@ function settingsEventListeners() {
 function refreshHighlightTip() {
   let tip = d3.select("#highlight_tip");
   tip.html("");
-  tip.append("p").html("Apply a tone:");
   toneMap.forEach(function(key, value) {
     tip.append("div")
       .attr("class", "tip-color-container")
       .attr("id", "tip-color-container-" + key)
-      .html(value.tone + ": " + "<i class='fa fa-paint-brush' aria-hidden='true' style='color: " + value.color +"!important;'></i>");
+      .html(function() {
+        console.log(key);
+        if (key == 1) {
+          return value.tone + " " + "<i class='fa fa-paint-brush' aria-hidden='true' style='color: " + value.color +"!important;'></i>";
+        } else {
+          return "| " + value.tone + " " + "<i class='fa fa-paint-brush' aria-hidden='true' style='color: " + value.color +"!important;'></i>";
+        }
+      });
 
       $("#tip-color-container-" + key).on("click", function() {
         event.preventDefault();
@@ -354,7 +357,6 @@ function refreshHighlightTip() {
   let tip2 = d3.select("#topic_tip");
   tip2.html("");
   topicMap.forEach(function(key, value) {
-    console.log(value);
     tip2.append("div")
       .attr("class", "tip-topic-container")
       .attr("id", "tip-topic-container-" + key)
@@ -373,7 +375,6 @@ function refreshHighlightTip() {
 
 
 function setupTooltips() {
-
   $("#text_container").on("mouseup", function() {
     if (window.getSelection().toString().length > 1) {
       current_range = window.getSelection().getRangeAt(0);
@@ -381,8 +382,8 @@ function setupTooltips() {
       $("#text_container_left").css("background-color", "gray");
 
       $("#highlight_tip").css("display", "block")
-        .css("top", event.pageY - 40)
-        .css("left", event.pageX);
+        .css("top", current_range.getBoundingClientRect().top + 20)
+        .css("left", current_range.getBoundingClientRect().right + 20);
     } else {
       $("#highlight_tip").css("display", "none");
       $("#text_container_left").css("background-color", "white");
@@ -401,7 +402,9 @@ function setupTooltips() {
     });
 }
 
-
+function hideTooltips() {
+  $("#highlight_tip, #topic_tip").css("display", "none");
+}
 /*
 * The write view displays only one h1 part at a time; this does that.
 */
@@ -426,6 +429,7 @@ function displayAnnotationsOfPart(part) {
 * Essentially switches between pages/views by setting all of the div displays to none and then toggling the desired view to block
 */
 function displayOnly(selection) {
+  hideTooltips();
   d3.select("#intro").style("display", "none");
   d3.select("#text_container").style("display", "none");
   d3.select("#settings").style("display", "none");
@@ -492,7 +496,6 @@ function highlightTopic(key) {
 //  newNode.setAttribute('style', "background-color: " + color);
   newNode.setAttribute('class', "highlightSpan");
   current_range.surroundContents(newNode);
-  console.log("topic " + key + " added");
 }
 
 // to be totally redone
