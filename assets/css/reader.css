@@ -202,7 +202,8 @@ input[type="color"] {
   display: none;
   margin: 0 auto;
   text-align: center;
-    font-family: "Roboto";
+  font-family: "Roboto";
+  font-weight: 300;
 }
 
 #table {
@@ -210,9 +211,8 @@ input[type="color"] {
 }
 
 #table h1, h2, h3, h4 {
-
-  font-weight: 300;
   cursor: pointer;
+  font-weight: 300;
 }
 
 
@@ -291,14 +291,15 @@ input[type="color"] {
 
 }
 
-.tip-color-container:hover {
+.tip-color-container:hover, .tip-topic-container:hover {
   cursor: pointer;
   background-color: lightblue;
 }
 
-.tip_topic_container:hover {
-  background-color: lightblue;
-  cursor: pointer;
+#compare {
+  width: 90%;
+  margin: 0 auto;
+  display: none;
 }
 
 #instructions1 {

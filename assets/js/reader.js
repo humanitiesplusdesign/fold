@@ -40,6 +40,7 @@ let numTopics = 0;
 let numTones = 0;
 let current_range;
 let activePart = 1;
+let columns = false;
 
 initializeReader();
 
@@ -256,8 +257,16 @@ function iconEventListeners() {
   $('#toggle-tableOfContents').on("click", function() {
     displayOnly("#tableOfContents");
   });
+  $('#toggle-columns').on("click", function() {
+    displayOnly("#text_container");
+    columns = true;
+    displayOnlyThisPart(activePart);
+    separateIntoColumns();
+    d3.selectAll("i").style("color", "gray");
+    d3.select("#toggle-columns").style("color", "black");
+  });
   $('#toggle-compare').on("click", function() {
-    //displayOnly("#compare");
+    displayOnly("#compare");
   });
   $('#toggle-settings').on("click", function() {
     displayOnly("#settings");
@@ -340,7 +349,7 @@ function refreshHighlightTip() {
       .attr("class", "tip-color-container")
       .attr("id", "tip-color-container-" + key)
       .html(function() {
-        console.log(key);
+
         if (key == 1) {
           return value.tone + " " + "<i class='fa fa-paint-brush' aria-hidden='true' style='color: " + value.color +"!important;'></i>";
         } else {
@@ -364,11 +373,6 @@ function refreshHighlightTip() {
       .on("click", function() {
         highlightTopic(key);
       });
-
-        $("#tip-color-container-" + key).on("click", function() {
-          event.preventDefault();
-          //applyTopic(key);
-        })
   });
 }
 
@@ -394,6 +398,8 @@ function setupTooltips() {
       $("#topic_tip").css("display", "block")
         .css("top", event.pageY - 40)
         .css("left", event.pageX);
+    }).on("mouseout", function() {
+    //  $("#topic_tip").css("display", "none");
     });
 
     $("#text_container_right").on("click", function() {
@@ -415,6 +421,9 @@ function displayOnlyThisPart(part) {
   d3.select("#text-h1-" + part).style("display", "block");
 }
 
+/*
+* Shows only the annotations for the current part
+*/
 function displayAnnotationsOfPart(part) {
   d3.selectAll(".annotation").style("display", function() {
     if (d3.select(this).attr("id").split("-")[1] == part) {
@@ -430,6 +439,7 @@ function displayAnnotationsOfPart(part) {
 */
 function displayOnly(selection) {
   hideTooltips();
+  resetColumns();
   d3.select("#intro").style("display", "none");
   d3.select("#text_container").style("display", "none");
   d3.select("#settings").style("display", "none");
@@ -490,31 +500,44 @@ function highlight(key) {
     });
   }
 
+/*
+* Similar to highlight(), but applies a topic span instead
+*/
 function highlightTopic(key) {
   let spanClass = "topic-" + key
   let newNode = document.createElement("span");
 //  newNode.setAttribute('style', "background-color: " + color);
-  newNode.setAttribute('class', "highlightSpan");
+  let selText = window.getSelection().toString();
+
+  newNode.setAttribute('class', spanClass);
   current_range.surroundContents(newNode);
 }
 
-// to be totally redone
+// Moves topic spans into columns
 function separateIntoColumns() {
-  d3.selectAll("span").each(function() {
-    let spanClass = d3.select(this).class().split("-")
+  d3.select("#text-h1-" + activePart).selectAll("span").each(function() {
+    let spanClass = d3.select(this).attr("class").split("-")
     if (spanClass[0] == "topic") {
       if (spanClass[1] == 1) {
-        // pan left
+          d3.select(this).style("margin-left", "0%")
+            .style("position", "absolute");
       } else if (spanClass[1] == 2) {
-        // pan center
+        d3.select(this).style("margin-left", "30%")
+          .style("position", "absolute");
       } else if (spanClass[1] == 3) {
-        // pan right
+        d3.select(this).style("margin-left", "60%")
+          .style("position", "absolute");
       }
     }
-    d3.selectAll(".topic-1").style("left", "0px");
-
   });
-    // temporarily wrap all other text in ignore spans
+
+  //set back to static and no margin-left
+}
+
+function resetColumns() {
+  d3.selectAll("span").each(function() {
+    d3.select(this).style("position", "static").style("margin-left", "0%");
+  })
 }
 
 //removes the highlighted text given an index and an id
