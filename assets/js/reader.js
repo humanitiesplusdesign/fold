@@ -1,20 +1,26 @@
 /* To do:
 
-  2 implement tone highlighting
-      2.1 paragraph separation by tone
-  3 side graphic based on tone
+  button icons:
+    fix glitch related to clicking on table of contents not displaying properly
 
+  tooltips:
+    improve removal behavior, style prettier
 
-  how to detect if span overlaps =
-      count number of <span> and number of </span> in selected text
-      if the counts are not identical, throw an error
-      otherwise, fine
+  column view:
+    animate the separation into columns
+    add 'active' tags of some sort on a top toolbar to let "columns" be collapsed (and ignored column expanded)
+    fix bug going from non-text-display to column view
 
-      one solution -
-      instead of throw an error, remove the first <span> and insert a </span> before the selection (or vice versa in the case of ending chopping off)
-  4(?) grid view which can alternate between linear and annulus visualizations
+  topics:
+  change non-topic text to gray
+  mark topic zones to the size
 
+  annotations:
+  attach to location in text (insert empty span with appropriate class)
 
+  compare view:
+    retrofit annulus visualization to fit new app - can be much less complicated than before
+    work on rectange/linear visualization
 
 */
 (function () {
@@ -22,7 +28,8 @@ const heirarchy = {
   "tree": [],
   "annulusArray": [],
   "categories": d3.map(),
-  "title": "Project 1"
+  "title": "Project 1",
+  "topicRects": [];
 }
 
 let svg_width = 400;
@@ -513,20 +520,29 @@ function highlightTopic(key) {
   current_range.surroundContents(newNode);
 }
 
-// Moves topic spans into columns
+/*
+* Moves topic spans into columns
+*/
 function separateIntoColumns() {
+  d3.select("#text_container").style("font-size", "0");
   d3.select("#text-h1-" + activePart).selectAll("span").each(function() {
     let spanClass = d3.select(this).attr("class").split("-")
     if (spanClass[0] == "topic") {
       if (spanClass[1] == 1) {
-          d3.select(this).style("margin-left", "0%")
-            .style("position", "absolute");
+          d3.select(this).style("left", "0%")
+            .style("top", this.getBoundingClientRect().top + 'px')
+            .style("position", "absolute")
+            .style("font-size", "1.6vw");
       } else if (spanClass[1] == 2) {
-        d3.select(this).style("margin-left", "30%")
-          .style("position", "absolute");
+        d3.select(this).style("left", "30%")
+          .style("top", this.getBoundingClientRect().top + 'px')
+          .style("position", "absolute")
+          .style("font-size", "1.6vw");
       } else if (spanClass[1] == 3) {
-        d3.select(this).style("margin-left", "60%")
-          .style("position", "absolute");
+        d3.select(this).style("left", "60%")
+          .style("top", this.getBoundingClientRect().top + 'px')
+          .style("position", "absolute")
+          .style("font-size", "1.6vw");
       }
     }
   });
@@ -534,10 +550,15 @@ function separateIntoColumns() {
   //set back to static and no margin-left
 }
 
+/*
+* Resets the columns, all text visible and joined
+*/
 function resetColumns() {
   d3.selectAll("span").each(function() {
-    d3.select(this).style("position", "static").style("margin-left", "0%");
+    d3.select(this).style("position", "static").style("left", "0%");
   })
+
+  d3.select("#text_container").style("font-size", "1.6vw");
 }
 
 //removes the highlighted text given an index and an id
@@ -775,5 +796,43 @@ function gridView() {
     rectangle visualization:
 
   */
+
+/*
+* Creates the rectange/linear visualization used on both the side of the text and in the compare view
+*/
+function createRectangle(part, svg) {
+
+  let bigRect = document.getElementById("#text-h1-" + part).getBoundingClientRect();
+  let rectArray = []
+  d3.select("#text-h1-" + part).selectAll("span").each(function() {
+    rectArray.push(this.getBoundingClientRect());
+  })
+
+
+}
+
+function compareView() {
+  let compare = d3.select("#compare")
+  compare.html("")
+    .append("h1")
+    .text(heirarchy.title);
+
+  for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
+    let compareDiv = compare.append("div")
+      .attr("id", "compare-part-" + (i + 1))
+      .attr("class", "compare-part")
+      .style("height", "500px")
+      .style("width", (100 / (heirarchy.tree[0].sections.length * 1.3)) + "%");
+
+    let compareSvg = compareDiv.append("svg")
+      .attr("height", 400)
+      .attr("width", (100 / (heirarchy.tree[0].sections.length * 1.3)) + "%");
+
+      createRectangle(i + 1, compareSvg);
+  }
+
+  // implement some way to switch to annulus view
+
+}
 
 })();
