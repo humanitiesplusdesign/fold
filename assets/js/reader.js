@@ -29,7 +29,7 @@ const heirarchy = {
   "annulusArray": [],
   "categories": d3.map(),
   "title": "Project 1",
-  "topicRects": [];
+  "topicRects": []
 }
 
 let svg_width = 400;
