@@ -5,9 +5,8 @@
   column view:
     add 'active' tags of some sort on a top toolbar to let "columns" be collapsed (and ignored column expanded)
 
-  topics:
-  change non-topic text to gray
-  mark topic zones to the size
+  highlights:
+  create data strcuture to store and fix proper ordering from top to bottom
 
   annotations:
   attach to location in text (insert empty span with appropriate class)
@@ -399,24 +398,19 @@ function setupTooltips() {
   $("#text_container").on("mouseup", function() {
     if (window.getSelection().toString().length > 1) {
       current_range = window.getSelection().getRangeAt(0);
-
-      $("#text_container_left").css("background-color", "gray");
-
       $("#highlight_tip").css("display", "block")
         .css("top", current_range.getBoundingClientRect().top + $('body').scrollTop() + 20)
         .css("left", current_range.getBoundingClientRect().right + 20);
     } else {
       $("#highlight_tip").css("display", "none");
-      $("#text_container_left").css("background-color", "white");
+      $("#topic_tip").css("display", "none");
     }
   });
 
     $("#text_container_left").on("mouseover", function() {
       $("#topic_tip").css("display", "block")
-        .css("top", event.pageY - 40)
-        .css("left", event.pageX);
-    }).on("mouseout", function() {
-    //  $("#topic_tip").css("display", "none");
+        .css("top", current_range.getBoundingClientRect().bottom + $('body').scrollTop() - 10)
+        .css("left", "12.5%");
     });
 
     $("#text_container_right").on("click", function() {

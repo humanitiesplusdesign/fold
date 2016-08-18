@@ -154,7 +154,14 @@ input[type="color"] {
   width: 3%;
   margin-left: 10%;
   margin-top: 40px;
+  background-color: gray;
+  opacity: 0;
   float: left;
+  transition: .2s;
+}
+
+#text_container_left:hover {
+  opacity: .3;
 }
 
 #left_svg {
