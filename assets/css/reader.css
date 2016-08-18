@@ -152,9 +152,14 @@ input[type="color"] {
 
 #text_container_left {
   width: 3%;
-  margin-left: 3%;
+  margin-left: 10%;
   margin-top: 40px;
   float: left;
+}
+
+#left_svg {
+  width: 100%;
+  height: 400px;
 }
 
 #text_container {
@@ -181,9 +186,11 @@ input[type="color"] {
 }
 
 #left_column {
-  width: 5%;
+  margin-left: .5%;
+  width: 8%;
   height: 500px;
   float: left;
+  position: fixed;
   font-family: "Roboto";
   margin-bottom: 5px;
 }

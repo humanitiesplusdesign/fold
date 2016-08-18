@@ -3,9 +3,7 @@
     improve removal behavior, style prettier
 
   column view:
-    animate the separation into columns
     add 'active' tags of some sort on a top toolbar to let "columns" be collapsed (and ignored column expanded)
-    fix bug going from non-text-display to column view
 
   topics:
   change non-topic text to gray
@@ -52,6 +50,7 @@ let activePart = 1;
 
 // true if rectangle visualization, false if annulus visualization
 let rectangles = true;
+let left_svg = d3.select("#left_svg");
 
 initializeReader();
 
@@ -517,22 +516,39 @@ function highlight(key) {
     $("#" + spanID).on("dblclick", function() {
       removeThisHighlight(spanID, key);
     });
+
+    updateLeftRectangle();
   }
 
 /*
 * Similar to highlight(), but applies a topic span instead
 */
 function highlightTopic(key) {
-  let spanClass = "topic-" + key
+  let spanClass = "topic-" + key;
   let newNode = document.createElement("span");
   let selText = window.getSelection().toString();
+  let id = spanClass + selText.substring(0,10).split(" ").join();
 
   newNode.setAttribute('class', spanClass);
-
-  //to do - change from this gray highlight to something that fits nicole's design
-  $('.' + spanClass).css("background-color", "lightgray");
-
+  newNode.setAttribute('id', id);
   current_range.surroundContents(newNode);
+  //to do - change from this gray highlight to something that fits nicole's design
+  $('#' + id).on("mouseover", function() {
+    $('#' + id).css("background-color", "gray");
+  }).on("mouseout", function() {
+    $('#' + id).css("background-color", "white");
+  })
+
+  updateLeftRectangle();
+}
+
+function updateLeftRectangle() {
+  left_svg.selectAll("rect").remove();
+  left_svg.append("rect")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("fill", "lightgray");
+  createRectangle(activePart, left_svg, 400, "100%");
 }
 
 /*
@@ -540,6 +556,7 @@ function highlightTopic(key) {
 */
 function separateIntoColumns() {
   // temporary fix:
+  let bottom = 100;
   d3.select("#text_container").style("font-size", "0");
   d3.select("#text-h1-" + activePart).selectAll("span").each(function() {
     let spanClass = d3.select(this).attr("class").split("-")
@@ -547,16 +564,17 @@ function separateIntoColumns() {
       d3.select(this).style("width", "29%")
         .style("position", "absolute")
         .style("font-size", "1.6vw")
-        .style("top", this.getBoundingClientRect().top + 'px');
+        .style("top", bottom + 'px');
       if (spanClass[1] == 1) {
-          d3.select(this).transition().duration("2s").style("left", "3%")
+          d3.select(this).transition().duration("3000").style("left", "3%");
       } else if (spanClass[1] == 2) {
-          d3.select(this).transition().style("left", "33%");
+          d3.select(this).transition().duration("3000").style("left", "33%");
 
       } else if (spanClass[1] == 3) {
-          d3.select(this).transition().style("left", "63%");
+          d3.select(this).transition().duration("3000").style("left", "63%");
       }
     }
+    bottom = 100 + this.getBoundingClientRect().bottom;
   });
 
   //set back to static and no margin-left
@@ -733,7 +751,8 @@ function createRectangle(part, svg, height, width) {
           break;
         }
       }
-      let color =   $(this).find("span").css("background-color");
+      let color = $(this).find("span").css("background-color");
+      if (color == undefined || color == "") color = "gray";
 
         rectArray.push({"start": start, "length": this.innerText.length, "color": color});
     }
@@ -781,6 +800,7 @@ function compareView() {
       let compareSvg = compareDiv.append("svg")
         .attr("height", 400)
         .attr("width", "80%")
+        .attr("stroke", "2px black")
         .style("background-color", "lightgray");
 
         createAnnulus(i, compareSvg, 400);
