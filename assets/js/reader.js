@@ -114,7 +114,7 @@ function initializeReader() {
         .html("<h" + level + " id='" + id + "'>" + id + " " +   name+ "</h" + level + ">")
         .on("click", function() {
           activePart = id.split(".")[1];
-          displayOnly("#text_container");
+          $("#toggle-text_container").click();
         });
       traverseAndUpdateTable(table, arrayOfSections[i].sections);
     }
@@ -248,6 +248,7 @@ function iconEventListeners() {
   });
   $('#toggle-annotate').on("click", function() {
     displayOnly("#text_container");
+    refreshHighlightTip();
     $("#text_container_right").css("height", $("#text_container").height());
     $("#text_container_left").css("height",  $("#text_container").height());
     $("#text_container_right").css("display", "block");
@@ -274,6 +275,7 @@ function iconEventListeners() {
   });
   $('#toggle-compare').on("click", function() {
     displayOnly("#compare");
+    compareView();
   });
   $('#toggle-settings').on("click", function() {
     displayOnly("#settings");
@@ -393,7 +395,7 @@ function setupTooltips() {
       $("#text_container_left").css("background-color", "gray");
 
       $("#highlight_tip").css("display", "block")
-        .css("top", current_range.getBoundingClientRect().top + 20)
+        .css("top", current_range.getBoundingClientRect().top + $('body').scrollTop() + 20)
         .css("left", current_range.getBoundingClientRect().right + 20);
     } else {
       $("#highlight_tip").css("display", "none");
@@ -454,6 +456,7 @@ function displayOnly(selection) {
   d3.select("#tableOfContents").style("display", "none");
   d3.select("#left_column").style("display", "none");
   d3.select("#right_column").style("display", "none");
+  d3.select("#compare").style("display", "none");
 
   d3.selectAll("i").style("color", "gray");
 
@@ -513,10 +516,12 @@ function highlight(key) {
 function highlightTopic(key) {
   let spanClass = "topic-" + key
   let newNode = document.createElement("span");
-//  newNode.setAttribute('style', "background-color: " + color);
   let selText = window.getSelection().toString();
 
   newNode.setAttribute('class', spanClass);
+
+  $('.' + spanClass).css("background-color", "lightgray");
+
   current_range.surroundContents(newNode);
 }
 
@@ -528,21 +533,17 @@ function separateIntoColumns() {
   d3.select("#text-h1-" + activePart).selectAll("span").each(function() {
     let spanClass = d3.select(this).attr("class").split("-")
     if (spanClass[0] == "topic") {
+      d3.select(this).style("width", "29%")
+        .style("position", "absolute")
+        .style("font-size", "1.6vw")
+        .style("top", this.getBoundingClientRect().top + 'px');
       if (spanClass[1] == 1) {
-          d3.select(this).style("left", "0%")
-            .style("top", this.getBoundingClientRect().top + 'px')
-            .style("position", "absolute")
-            .style("font-size", "1.6vw");
+          d3.select(this).transition().duration("2s").style("left", "3%")
       } else if (spanClass[1] == 2) {
-        d3.select(this).style("left", "30%")
-          .style("top", this.getBoundingClientRect().top + 'px')
-          .style("position", "absolute")
-          .style("font-size", "1.6vw");
+          d3.select(this).transition().style("left", "33%");
+
       } else if (spanClass[1] == 3) {
-        d3.select(this).style("left", "60%")
-          .style("top", this.getBoundingClientRect().top + 'px')
-          .style("position", "absolute")
-          .style("font-size", "1.6vw");
+          d3.select(this).transition().style("left", "63%");
       }
     }
   });
@@ -800,15 +801,32 @@ function gridView() {
 /*
 * Creates the rectange/linear visualization used on both the side of the text and in the compare view
 */
-function createRectangle(part, svg) {
+function createRectangle(part, svg, height, width) {
 
-  let bigRect = document.getElementById("#text-h1-" + part).getBoundingClientRect();
-  let rectArray = []
+  let mainTextLength = document.getElementById("text-h1-" + part).innerText.length;
+  let rectArray = [];
   d3.select("#text-h1-" + part).selectAll("span").each(function() {
-    rectArray.push(this.getBoundingClientRect());
+    if (!d3.select(this).classed("highlightSpan") || !d3.select(this).classed("annotationSpan") ) {
+      let start = 0;
+          for (let i = 0; i < heirarchy.tree[0].sections[part].text.length - this.innerText.length; i++) {
+            if (heirarchy.tree[0].sections[part].text.substring(i, i + this.innerText.length) == this.innerText) {
+              start = i;
+              break;
+            }
+          }
+
+          rectArray.push({"start": start, "length": this.innerText.length});
+    }
   })
-
-
+  console.log(rectArray);
+  let heightFactor = height / mainTextLength;
+  for (let i = 0; i < rectArray.length; i++) {
+    svg.append("rect")
+      .attr("y", rectArray[i].start * heightFactor)
+      .attr("height", rectArray[i].length * heightFactor)
+      .attr("width", width)
+      .attr("fill", "gray");
+  }
 }
 
 function compareView() {
@@ -819,16 +837,17 @@ function compareView() {
 
   for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
     let compareDiv = compare.append("div")
-      .attr("id", "compare-part-" + (i + 1))
+      .attr("id", "compare-part-" + i)
       .attr("class", "compare-part")
       .style("height", "500px")
       .style("width", (100 / (heirarchy.tree[0].sections.length * 1.3)) + "%");
 
     let compareSvg = compareDiv.append("svg")
       .attr("height", 400)
-      .attr("width", (100 / (heirarchy.tree[0].sections.length * 1.3)) + "%");
+      .attr("width", (100 / (heirarchy.tree[0].sections.length * 1.3)) + "%")
+      .style("background-color", "lightgray");
 
-      createRectangle(i + 1, compareSvg);
+      createRectangle(i, compareSvg, 400, "100%");
   }
 
   // implement some way to switch to annulus view
