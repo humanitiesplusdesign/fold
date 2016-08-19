@@ -2,6 +2,11 @@
   tooltips:
     improve removal behavior, style prettier
 
+  table:
+    make active part bold
+    add headers to make clear what section is being viewed
+    replace ## in text with either generic or assigned name
+
   column view:
     add 'active' tags of some sort on a top toolbar to let "columns" be collapsed (and ignored column expanded)
 
@@ -13,7 +18,6 @@
 
   compare view:
     retrofit annulus visualization to fit new app - can be much less complicated than before
-    work on rectange/linear visualization
 
   saving/loading
     plug in annotations and all spans into heirarchy
@@ -26,7 +30,6 @@ const heirarchy = {
   "annulusArray": [],
   "categories": d3.map(),
   "title": "Project 1",
-  "topicRects": []
 }
 
 let svg_width = 400;
@@ -250,6 +253,10 @@ function iconEventListeners() {
   });
   $('#toggle-annotate').on("click", function() {
     displayOnly("#text_container");
+
+    d3.selectAll("i").style("color", "gray");
+    d3.select("#toggle-annotate").style("color", "black");
+
     refreshHighlightTip();
     $("#text_container_right").css("height", $("#text_container").height());
     $("#text_container_left").css("height",  $("#text_container").height());
@@ -260,9 +267,7 @@ function iconEventListeners() {
     displayOnlyThisPart(activePart);
     displayAnnotationsOfPart(activePart);
     //display other stuff
-
-    d3.selectAll("i").style("color", "gray");
-    d3.select("#toggle-annotate").style("color", "black");
+    updateLeftRectangle();
   });
   $('#toggle-tableOfContents').on("click", function() {
     displayOnly("#tableOfContents");
@@ -409,8 +414,8 @@ function setupTooltips() {
 
     $("#text_container_left").on("mouseover", function() {
       $("#topic_tip").css("display", "block")
-        .css("top", current_range.getBoundingClientRect().bottom + $('body').scrollTop() - 10)
-        .css("left", "12.5%");
+        .css("top", current_range.getBoundingClientRect().top + $('body').scrollTop() + 20)
+        .css("left", "11.5%");
     });
 
     $("#text_container_right").on("click", function() {
@@ -495,6 +500,7 @@ function highlight(key) {
     let desc = toneMap.get(key).description;
     let color = toneMap.get(key).color;
     let index = toneMap.get(key).number;
+    let selText = window.getSelection().toString();
 
       // get the selected text, put a span with appropriate id around it
       toneMap.set(key, {"tone": category, "description": desc, "color": color, "number": index + 1});
@@ -510,6 +516,14 @@ function highlight(key) {
     $("#" + spanID).on("dblclick", function() {
       removeThisHighlight(spanID, key);
     });
+
+    heirarchy.tree[0].sections[activePart].data.highlights.push(
+      {
+      "key": key,
+      "text": selText,
+      "position": document.getElementById("text-h1-" + activePart).innerText.indexOf(selText)
+      }
+    )
 
     updateLeftRectangle();
   }
@@ -533,6 +547,14 @@ function highlightTopic(key) {
     $('#' + id).css("background-color", "white");
   })
 
+  heirarchy.tree[0].sections[activePart].data.topics.push(
+    {
+    "key": key,
+    "text": selText,
+    "position": document.getElementById("text-h1-" + activePart).innerText.indexOf(selText)
+    }
+  )
+
   updateLeftRectangle();
 }
 
@@ -549,7 +571,6 @@ function updateLeftRectangle() {
 * Moves topic spans into columns
 */
 function separateIntoColumns() {
-  // temporary fix:
   let bottom = 100;
   d3.select("#text_container").style("font-size", "0");
   d3.select("#text-h1-" + activePart).selectAll("span").each(function() {
@@ -568,7 +589,7 @@ function separateIntoColumns() {
           d3.select(this).transition().duration("3000").style("left", "63%");
       }
     }
-    bottom = 100 + this.getBoundingClientRect().bottom;
+    bottom = 100 + this.getBoundingClientRect().bottom + $(this).scrollTop();
   });
 
   //set back to static and no margin-left
@@ -594,6 +615,7 @@ function removeThisHighlight(spanID, key) {
     let index = toneMap.get(key).number;
     toneMap.set(key, {"tone": category, "description": desc, "color": color, "number": index - 1});
     // later - delete from wherever it is stored
+    updateLeftRectangle();
 }
 
 /*
@@ -733,28 +755,28 @@ function createAnnulus(part, svg, height) {
 * Creates the rectange/linear visualization used on both the side of the text and in the compare view
 */
 function createRectangle(part, svg, height, width) {
-  let mainTextLength = document.getElementById("text-h1-" + part).innerText.length; // should be equal to heirarchy.tree[0].sections[part].text.length
+  let mainText = document.getElementById("text-h1-" + part).innerText;
+  let mainTextLength = mainText.length; // should be equal to heirarchy.tree[0].sections[part].text.length
   let rectArray = [];
   d3.select("#text-h1-" + part).selectAll("span").each(function() {
     if (!d3.select(this).classed("highlightSpan") && !d3.select(this).classed("annotationSpan") ) {
-      let start = 0;
+        let start;
           // find where the span starts relative to the part in order to determine y attr
-      for (let i = 0; i < heirarchy.tree[0].sections[part].text.length - this.innerText.length; i++) {
-        if (heirarchy.tree[0].sections[part].text.substring(i, i + this.innerText.length) == this.innerText) {
-          start = i;
-          break;
-        }
-      }
-      let color = $(this).find("span").css("background-color");
-      if (color == undefined || color == "") color = "gray";
+          if (mainText.indexOf(this.innerText) >= 0) {
+            start = mainText.indexOf(this.innerText);
+          } else {
+            start = mainTextLength - this.innerText.length; //??
+          }
+          let color = $(this).find("span").css("background-color");
+          if (color == undefined || color == "") color = "gray";
 
-        rectArray.push({"start": start, "length": this.innerText.length, "color": color});
-    }
-  })
+          rectArray.push({"start": start, "length": this.innerText.length, "color": color});
+      }
+    })
 
   let heightFactor = height / mainTextLength;
   for (let i = 0; i < rectArray.length; i++) {
-    svg.append("rect")
+    svg.append("rect").transition()
       .attr("y", rectArray[i].start * heightFactor)
       .attr("height", rectArray[i].length * heightFactor)
       .attr("width", width)
@@ -789,13 +811,18 @@ function compareView() {
         .attr("id", "compare-part-" + i)
         .attr("class", "compare-part")
         .style("height", "500px")
-        .style("width", (100 / (heirarchy.tree[0].sections.length)) + "%");
+        .style("width", (100 / (heirarchy.tree[0].sections.length)) + "%")
+        .on("click", function() {
+              activePart = i;
+              $("#toggle-annotate").click();
+            });
 
       let compareSvg = compareDiv.append("svg")
         .attr("height", 400)
         .attr("width", "80%")
         .attr("stroke", "2px black")
         .style("background-color", "lightgray");
+
 
         createAnnulus(i, compareSvg, 400);
     }
