@@ -30,6 +30,12 @@ const heirarchy = {
   "annulusArray": [],
   "categories": d3.map(),
   "title": "Project 1",
+  "global": {
+    "toneMap": d3.map(),
+    "topicMap": d3.map(),
+    "numTopics": 0,
+    "numTones": 0,
+  }
 }
 
 let svg_width = 400;
@@ -674,31 +680,14 @@ function annulusPrepForSection(section) {
       })
 }
 
-function drawAnnulusOfSection(section) {
-  currentCircleArray = [];
-  let max_radius = svg_width / 2 - 10;
-  let center = svg_width / 2;
-  for (let i = 0; i < section.segments.length; i++) {
-      //draw the ring
-      drawRing(i + 1, section.segments[i].color, section.segments.length, section.segments[i].category, section.segments[i].text, max_radius, "current", center);
-      let ring = {
-                    "order": i + 1,
-                    "color": section.segments[i].color,
-                    "category": section.segments[i].category
-                    };
-      //add to list of current circles in case the annulus needs to be saved
-      currentCircleArray.push(ring);
-    }
-}
-
 //does exactly that
-function drawRing(order, color, max, circleCategory, circleText, max_radius, name, center) {
+function drawRing(order, color, max, size, svg) {
   // calculate desired radius based on order in sequence - earlier rings get larger radii
   let start_radius = 50 / max;
-  let increment = (max_radius - start_radius) / max;
-  let radius = max_radius - increment * order;
+  let increment = (size / 2 - start_radius) / max;
+  let radius = size / 2 - increment * order;
   let opacity = order / max;
-  let circleName = "circle" + order + name;
+  let circleName = "circle" + order;
   let animationDelay = .1 * order;
   let animationTime = .25 * max;
 
@@ -714,19 +703,10 @@ function drawRing(order, color, max, circleCategory, circleText, max_radius, nam
   let current_animations = d3.select("#animation").text();
   //adds the new animation rule for the new circle
   d3.select("#animation").text(current_animations + rule_with_opacity);
-  //draw a circle
-  let current_svg;
-  if (grid_svg != "") {
-      current_svg = grid_svg;
-    } else {
-      current_svg = reader_svg;
-    }
-
-  current_svg.append("circle")
-      .attr("id", circleName)
+  svg.append("circle")
       .attr("class", "svgcircle")
-      .attr("cx", center)
-      .attr("cy", 200)
+      .attr("cx", size / 2)
+      .attr("cy", size / 2)
       .attr("r", radius)
       .style("opacity", 0)
       .style("fill", color)
@@ -736,17 +716,37 @@ function drawRing(order, color, max, circleCategory, circleText, max_radius, nam
       .style("animation-delay", animationDelay + "s");
 }
 
-// ring object: json file of array, category, color, with length of array as max and
-function Annulus(circleArray, name, index) {
-  this.circleArray = circleArray;
-  //circleArray = array of objects, each object is a circle containing color, category, and order;
-  this.max = circleArray.length;
-  this.draw = recreateAnnulus;
-  this.name = name;
-  this.index = index;
-}
-
 function createAnnulus(part, svg, height) {
+  let mainText = document.getElementById("text-h1-" + part).innerText;
+  let mainTextLength = mainText.length;
+  let annulusArray = [];
+
+  d3.select("#text-h1-" + part).selectAll("span").each(function() {
+    if (!d3.select(this).classed("highlightSpan") && !d3.select(this).classed("annotationSpan") ) {
+        let start;
+          // find where the span starts relative to the part in order to determine y attr
+          if (mainText.indexOf(this.innerText) >= 0) {
+            start = mainText.indexOf(this.innerText);
+          } else {
+            start = mainTextLength - this.innerText.length; //??
+          }
+          let color = $(this).find("span").css("background-color");
+          if (color == undefined || color == "") color = "gray";
+
+          annulusArray.push({"placement": start, "length": this.innerText.length, "color": color});
+      }
+    })
+    //...
+    annulusArray.sort(function(a, b) {
+      if (a.placement > b.placement) return 1;
+      if (a.placement < b.placement) return -1;
+      return 0;
+    });
+
+    for (let i = 0; i < annulusArray.length; i++) {
+      let ring = annulusArray[i];
+      drawRing(i, ring.color, annulusArray.length, height, svg);
+    }
 
 }
 
@@ -827,6 +827,48 @@ function compareView() {
         createAnnulus(i, compareSvg, 400);
     }
   }
+}
+
+function loadHeirarchyJson(jsonFile) {
+  heirarchy = jsonFile;
+  //set other global variables to values specified in json
+  displayTable();
+  loadSettings();
+  loadData();
+}
+
+function loadData() {
+  for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
+      // tones
+      for (let j = 0; j < heirarchy.tree[0].sections[i].data.highlights.length; j++) {
+        loadToneSpan(j);
+      }
+      // topics
+      for (let j = 0; j < heirarchy.tree[0].sections[i].data.topics.length; j++) {
+        loadTopicSpan(j);
+      }
+      // annotations
+      for (let j = 0; j < heirarchy.tree[0].sections[i].data.annotations.length; j++) {
+        loadAnnotation(j);
+      }
+    }
+}
+
+function loadSettings() {
+    // display the proper buttons on the settings page
+    // use jquery to set the values of the fields to match the values of the keys in the map
+}
+
+function loadToneSpan(num) {
+  //create tone span
+}
+
+function loadTopicSpan(num) {
+  //create topic span
+}
+
+function loadAnnotation(num) {
+  //create annotation
 }
 
 })();

@@ -68,6 +68,14 @@ display: none;
   margin-top: 10px;
 }
 
+#column-controls {
+  width: 100%;
+  text-align: center;
+  height: 40px;
+  margin-top: 10px;
+  display: none;
+}
+
 #icon-controls i {
   margin-right: 20px;
   transition: .3s;
