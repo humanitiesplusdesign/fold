@@ -1,7 +1,4 @@
 /* To do:
-  tooltips:
-    improve removal behavior, style prettier
-
   table:
     make active part bold
     add headers to make clear what section is being viewed
@@ -15,9 +12,6 @@
 
   annotations:
   attach to location in text (insert empty span with appropriate class)
-
-  compare view:
-    retrofit annulus visualization to fit new app - can be much less complicated than before
 
   saving/loading
     plug in annotations and all spans into heirarchy
@@ -42,6 +36,7 @@ let svg_width = 400;
 let colorMap = d3.map();
 // for storing data to generate annulus rings later
 let annulusArray = [];
+let activeTopics = [];
 
 //topics, tones, and tooltips
 let highlight_tip;
@@ -57,8 +52,13 @@ let current_range;
 let activePart = 1;
 
 // true if rectangle visualization, false if annulus visualization
-let rectangles = true;
+let rectangles = false;
 let left_svg = d3.select("#left_svg");
+
+// scrolling
+
+var last_known_scroll_position = 0;
+var ticking = false;
 
 initializeReader();
 
@@ -496,6 +496,32 @@ function displayTable() {
   prepareText(heirarchy.tree[0].sections[0].id);
   iconEventListeners();
   settingsEventListeners();
+  scrollEventListener();
+}
+
+function scrollEventListener() {
+  window.addEventListener('scroll', function(e) {
+    last_known_scroll_position = window.scrollY;
+    if (!ticking) {
+     window.requestAnimationFrame(function() {
+       updateTrackingRectangle(last_known_scroll_position);
+       ticking = false;
+     });
+   }
+ ticking = true;
+  });
+}
+
+/*
+* Moves the yellow rectangle over the lefthand visualization depending on the scroll and the document length
+*/
+function updateTrackingRectangle(scroll) {
+    let svgheight = d3.select("#left_svg").style("height");
+    let ratio = window.innerHeight / $( document ).height() ;
+    d3.select("#tracking_rect")
+      .style("height", svgheight.split("px")[0] * ratio + "px")
+      .style("top", scroll * ratio + "px")
+      .style("width", "100px");
 }
 
 /*
@@ -564,6 +590,9 @@ function highlightTopic(key) {
   updateLeftRectangle();
 }
 
+/*
+* Does exactly that
+*/
 function updateLeftRectangle() {
   left_svg.selectAll("rect").remove();
   left_svg.append("rect")
@@ -595,10 +624,27 @@ function separateIntoColumns() {
           d3.select(this).transition().duration("3000").style("left", "63%");
       }
     }
-    bottom = 100 + this.getBoundingClientRect().bottom + $(this).scrollTop();
+    bottom = 30 + this.getBoundingClientRect().bottom + $(this).scrollTop();
   });
 
   //set back to static and no margin-left
+}
+
+/*
+* Allows specific topics to be toggled on or off in the column view
+*/
+function updateColumns() {
+  activeTopics = [];
+  for (let i = 1; i < 5; i++) {
+    if (d3.select("#topic-toggle-" + i).attr('checked','true')) {
+      activeTopics.push(i);
+    }
+  }
+
+  for (let i = 0; i < activeTopics.length; i++) {
+
+  }
+
 }
 
 /*
@@ -671,19 +717,11 @@ function createAnnotation(part, top) {
     });
 }
 
-//order the segment entries in section based on appearance order in text
-function annulusPrepForSection(section) {
-      section.segments.sort(function(a, b) {
-        if (a.placement > b.placement) return 1;
-        if (a.placement < b.placement) return -1;
-        return 0;
-      })
-}
-
 //does exactly that
 function drawRing(order, color, max, size, svg) {
+  order += 1;
   // calculate desired radius based on order in sequence - earlier rings get larger radii
-  let start_radius = 50 / max;
+  let start_radius = size / 2 / max;
   let increment = (size / 2 - start_radius) / max;
   let radius = size / 2 - increment * order;
   let opacity = order / max;
@@ -716,7 +754,10 @@ function drawRing(order, color, max, size, svg) {
       .style("animation-delay", animationDelay + "s");
 }
 
-function createAnnulus(part, svg, height) {
+/*
+* Creates and animates the annulus visualization used in the compare view
+*/
+function createAnnulus(part, svg, size) {
   let mainText = document.getElementById("text-h1-" + part).innerText;
   let mainTextLength = mainText.length;
   let annulusArray = [];
@@ -742,10 +783,12 @@ function createAnnulus(part, svg, height) {
       if (a.placement < b.placement) return -1;
       return 0;
     });
+    // get the int of the width which is determined by %
+    let adjSize = parseInt(window.getComputedStyle(document.getElementById("compare-part-0"),null).getPropertyValue("width"), 10);
 
     for (let i = 0; i < annulusArray.length; i++) {
       let ring = annulusArray[i];
-      drawRing(i, ring.color, annulusArray.length, height, svg);
+      drawRing(i, ring.color, annulusArray.length, adjSize, svg);
     }
 
 }
@@ -806,6 +849,7 @@ function compareView() {
         createRectangle(i, compareSvg, 400, "100%");
     }
   } else {
+    d3.select("#animation").text("");
     for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
       let compareDiv = compare.append("div")
         .attr("id", "compare-part-" + i)
@@ -819,12 +863,10 @@ function compareView() {
 
       let compareSvg = compareDiv.append("svg")
         .attr("height", 400)
-        .attr("width", "80%")
-        .attr("stroke", "2px black")
-        .style("background-color", "lightgray");
+        .attr("width", "100%")
+        .attr("stroke", "2px black");
 
-
-        createAnnulus(i, compareSvg, 400);
+        createAnnulus(i, compareSvg, "100%");
     }
   }
 }
