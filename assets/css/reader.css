@@ -331,6 +331,18 @@ input[type="color"] {
   width: 90%;
   margin: 0 auto;
   display: none;
+  text-align: center;
+  font-family: "Roboto";
+}
+
+#compare button {
+  height: 50px;
+}
+
+#compare-control {
+  font-size: 20px;
+  margin-bottom: 20px;
+  margin-right: 0px;
 }
 
 .compare-part {

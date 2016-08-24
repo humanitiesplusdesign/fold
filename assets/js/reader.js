@@ -1,4 +1,13 @@
 /* To do:
+  bug fixes:
+    left hand margin of ordinary text view
+    ratio of scrolling left hand rectangle
+    column view height stuff
+
+
+  annotation view:
+    append svg in the left hand hover bar with horizontal text, per design specs
+
   table:
     make active part bold
     add headers to make clear what section is being viewed
@@ -516,12 +525,14 @@ function scrollEventListener() {
 * Moves the yellow rectangle over the lefthand visualization depending on the scroll and the document length
 */
 function updateTrackingRectangle(scroll) {
-    let svgheight = d3.select("#left_svg").style("height");
-    let ratio = window.innerHeight / $( document ).height() ;
+    let svgheight = parseInt(d3.select("#left_svg").style("height"), 10);
+    let heightRatio = $(window).height() / $( document ).height();
+    let height = svgheight * heightRatio;
+    let topRatio = (svgheight) / $( document ).height();
     d3.select("#tracking_rect")
-      .style("height", svgheight.split("px")[0] * ratio + "px")
-      .style("top", scroll * ratio + "px")
-      .style("width", "100px");
+      .style("height", height + "px")
+      .style("top", scroll * topRatio + "px")
+      .style("width", "99.5%");
 }
 
 /*
@@ -624,7 +635,7 @@ function separateIntoColumns() {
           d3.select(this).transition().duration("3000").style("left", "63%");
       }
     }
-    bottom = 30 + this.getBoundingClientRect().bottom + $(this).scrollTop();
+    bottom = 70 + this.getBoundingClientRect().bottom + $(this).scrollTop();
   });
 
   //set back to static and no margin-left
@@ -830,8 +841,15 @@ function createRectangle(part, svg, height, width) {
 function compareView() {
   let compare = d3.select("#compare")
   compare.html("")
-    .append("h1")
-    .text(heirarchy.title);
+    .append("div")
+    .attr("id", "compare-control")
+    .html(heirarchy.title + "</br>")
+    .append("button")
+    .text("Switch Visualization Mode")
+    .on("click", function() {
+      rectangles = rectangles ? false : true;
+      compareView();
+    })
 
   if (rectangles) {
     for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
