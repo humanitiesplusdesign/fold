@@ -280,6 +280,7 @@ function iconEventListeners() {
     d3.select("#right_column").style("display", "block");
     displayOnlyThisPart(activePart);
     displayAnnotationsOfPart(activePart);
+    displayTopicsofPart(activePart);
     //display other stuff
     updateLeftRectangle();
   });
@@ -468,6 +469,16 @@ function displayAnnotationsOfPart(part) {
   })
 }
 
+function displayTopicsofPart(part) {
+  d3.selectAll(".topic_rect").style("display", function() {
+    if (d3.select(this).attr("id").split("-")[0] == part) {
+      return "block";
+    } else {
+      return "none";
+    }
+  })
+}
+
 /*
 * Essentially switches between pages/views by setting all of the div displays to none and then toggling the desired view to block
 */
@@ -518,6 +529,10 @@ function scrollEventListener() {
    }
  ticking = true;
   });
+}
+
+function windowResizeListener() {
+  // to-do: make everything that doesn't scale with width of viewport but needs to do so here. annotations, topic markers, etc.
 }
 
 /*
@@ -583,6 +598,11 @@ function highlightTopic(key) {
   newNode.setAttribute('id', id);
   current_range.surroundContents(newNode);
   //to do - change from this gray highlight to something that fits nicole's design
+  $('#' + id).on("mouseover", function() {
+    $('#' + id).css("border", "1px solid gray");
+  }).on("mouseout", function() {
+    $('#' + id).css("border", "none");
+  })
 
   heirarchy.tree[0].sections[activePart].data.topics.push(
     {
@@ -592,14 +612,14 @@ function highlightTopic(key) {
     }
   )
 
-  let twidth = current_range.getBoundingClientRect().bottom - current_range.getBoundingClientRect().top;
-  let ttop = current_range.getBoundingClientRect().bottom + $("body").scrollTop();
+  let tWidth = current_range.getBoundingClientRect().bottom - current_range.getBoundingClientRect().top;
+  let tTop = current_range.getBoundingClientRect().bottom + $("body").scrollTop();
 
   d3.select("#text_container_left").append("div")
     .attr("class", "topic_rect")
-    .attr("id", "tr-" + id)
-    .style("width", twidth + "px")
-    .style("top", ttop + "px")
+    .attr("id", activePart + "-tr-" + id)
+    .style("width", tWidth + "px")
+    .style("top", tTop + "px")
     .style("height", "25px")
     .text(topicMap.get(key).topic);
 
