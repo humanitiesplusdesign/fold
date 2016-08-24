@@ -1,9 +1,6 @@
 /* To do:
   bug fixes:
-    left hand margin of ordinary text view
-    ratio of scrolling left hand rectangle
     column view height stuff
-
 
   annotation view:
     append svg in the left hand hover bar with horizontal text, per design specs
@@ -259,6 +256,8 @@ function iconEventListeners() {
   $('#toggle-text_container').on("click", function() {
     displayOnly("#text_container");
     refreshHighlightTip();
+    d3.select("#left_column").style("display", "block").style("opacity", 0);
+    $("#text_container_left").css("display", "block").css("opacity", 0);
     $("#text_container_right").css("height", $("#text_container").height());
     $("#text_container_left").css("height",  $("#text_container").height());
     displayOnlyThisPart(activePart);
@@ -276,8 +275,8 @@ function iconEventListeners() {
     $("#text_container_right").css("height", $("#text_container").height());
     $("#text_container_left").css("height",  $("#text_container").height());
     $("#text_container_right").css("display", "block");
-    $("#text_container_left").css("display", "block");
-    d3.select("#left_column").style("display", "block");
+    $("#text_container_left").css("display", "block").css("opacity", 1);
+    d3.select("#left_column").style("display", "block").style("opacity", 1);
     d3.select("#right_column").style("display", "block");
     displayOnlyThisPart(activePart);
     displayAnnotationsOfPart(activePart);
@@ -584,11 +583,6 @@ function highlightTopic(key) {
   newNode.setAttribute('id', id);
   current_range.surroundContents(newNode);
   //to do - change from this gray highlight to something that fits nicole's design
-  $('#' + id).on("mouseover", function() {
-    $('#' + id).css("background-color", "gray");
-  }).on("mouseout", function() {
-    $('#' + id).css("background-color", "white");
-  })
 
   heirarchy.tree[0].sections[activePart].data.topics.push(
     {
@@ -597,6 +591,18 @@ function highlightTopic(key) {
     "position": document.getElementById("text-h1-" + activePart).innerText.indexOf(selText)
     }
   )
+
+  let twidth = current_range.getBoundingClientRect().bottom - current_range.getBoundingClientRect().top;
+  let ttop = current_range.getBoundingClientRect().bottom + $("body").scrollTop();
+
+  d3.select("#text_container_left").append("div")
+    .attr("class", "topic_rect")
+    .attr("id", "tr-" + id)
+    .style("width", twidth + "px")
+    .style("top", ttop + "px")
+    .style("height", "25px")
+    .text(topicMap.get(key).topic);
+
 
   updateLeftRectangle();
 }

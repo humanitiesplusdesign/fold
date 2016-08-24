@@ -162,8 +162,6 @@ input[type="color"] {
   width: 3%;
   margin-left: 10%;
   margin-top: 40px;
-  background-color: gray;
-  opacity: 0;
   float: left;
   transition: .2s;
 }
@@ -171,6 +169,16 @@ input[type="color"] {
 #left_svg {
   width: 100%;
   height: 400px;
+}
+
+.topic_rect {
+  background-color: gray;
+  color: white;
+  font-family: "Roboto";
+  float: left;
+  transform: rotate(270deg);
+	transform-origin: left top 0;
+  position: absolute;
 }
 
 #tracking_rect {
@@ -181,9 +189,10 @@ input[type="color"] {
 }
 
 #text_container {
-  width: 55%;
+  width: 59%;
   margin-top: 20px;
   padding: 20px;
+  padding-left: 0px;
   transition: 1s;
   font-family: "Roboto";
   font-size: 1.6vw;
