@@ -513,6 +513,7 @@ function displayTable() {
   displayOnly("#tableOfContents");
   traverseAndUpdateTableHelper();
   prepareText(heirarchy.tree[0].sections[0].id);
+  activePart = 0;
   iconEventListeners();
   settingsEventListeners();
   scrollEventListener();
@@ -591,17 +592,17 @@ function highlight(key) {
 function highlightTopic(key) {
   let spanClass = "topic-" + key;
   let newNode = document.createElement("span");
-  let selText = window.getSelection().toString();
-  let id = spanClass + selText.substring(0,10).split(" ").join();
+  let selText = current_range.toString();
+  let id = spanClass + selText.substring(0,10).split(" ").join().replace(/\W/g, '');
 
   newNode.setAttribute('class', spanClass);
   newNode.setAttribute('id', id);
   current_range.surroundContents(newNode);
   //to do - change from this gray highlight to something that fits nicole's design
   $('#' + id).on("mouseover", function() {
-    $('#' + id).css("border", "1px solid gray");
+    $('#' + id).css("font-style", "italic");
   }).on("mouseout", function() {
-    $('#' + id).css("border", "none");
+    $('#' + id).css("font-style", "normal");
   })
 
   heirarchy.tree[0].sections[activePart].data.topics.push(
@@ -617,11 +618,20 @@ function highlightTopic(key) {
 
   d3.select("#text_container_left").append("div")
     .attr("class", "topic_rect")
-    .attr("id", activePart + "-tr-" + id)
+    .attr("id", "tr-" + activePart + "-" + id)
     .style("width", tWidth + "px")
     .style("top", tTop + "px")
     .style("height", "25px")
-    .text(topicMap.get(key).topic);
+    .text(topicMap.get(key).topic)
+    .append("i")
+    .attr("class", "fa fa-times")
+    .attr("aria-hidden", "true")
+    .style("float", "right")
+    .on("click", function() {
+      $("#" + id).contents().unwrap();
+      d3.select("#tr-" + activePart + "-" + id).remove();
+      updateLeftRectangle();
+    });
 
 
   updateLeftRectangle();
@@ -643,7 +653,7 @@ function updateLeftRectangle() {
 * Moves topic spans into columns
 */
 function separateIntoColumns() {
-  let bottom = 100;
+  let bottom = 170;
   d3.select("#text_container").style("font-size", "0");
   d3.select("#text-h1-" + activePart).selectAll("span").each(function() {
     let spanClass = d3.select(this).attr("class").split("-")
@@ -664,6 +674,25 @@ function separateIntoColumns() {
     bottom = 70 + this.getBoundingClientRect().bottom + $(this).scrollTop();
   });
 
+  d3.select("#column-controls").html("").style("display", "block");
+  topicMap.forEach(function(key, value) {
+    let thisKey = key;
+    d3.select("#column-controls").append("span")
+      .style("left", function(d,i) {
+        if (thisKey == 1) {
+          return "10%";
+        } else if (thisKey == 2) {
+          return "40%";
+        } else if (thisKey == 3) {
+          return "70%";
+        }
+      })
+      .text(value.topic)
+      .style("font-family", "Roboto")
+      .style("position", 'absolute')
+      .style("color", "black")
+      .style("font-size", "18px");
+  })
   //set back to static and no margin-left
 }
 
@@ -693,6 +722,7 @@ function resetColumns() {
   })
 
   d3.select("#text_container").style("font-size", "1.6vw");
+    d3.select("#column_controls").style("display", "none");
 }
 
 //removes the highlighted text given an index and an id
@@ -707,10 +737,18 @@ function removeThisHighlight(spanID, key) {
     updateLeftRectangle();
 }
 
+//note - add an x button the side rectangle of topics to trigger this function
+function removeThisTopic(id) {
+  //unwrap contents of id
+  // find the rectangle div associated with it, remove that
+  // remove from wherever it is in the json data
+  // update visuals
+}
+
 /*
 * Creaes an annotation
 */
-function createAnnotation(part, top) {
+function createAnnotation(part, top) {z
   let annotation = d3.select("#right_column").append("div")
     .attr("class", "annotation")
     .attr("id", "annotation-" + part + "-" + top)
@@ -864,6 +902,9 @@ function createRectangle(part, svg, height, width) {
   }
 }
 
+/*
+* Displays the visualizations of the partitions. Button switches between annulus and rectangle visualization
+*/
 function compareView() {
   let compare = d3.select("#compare")
   compare.html("")
@@ -876,7 +917,7 @@ function compareView() {
       rectangles = rectangles ? false : true;
       compareView();
     })
-
+  //rectangle visualization
   if (rectangles) {
     for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
       let compareDiv = compare.append("div")
@@ -892,7 +933,7 @@ function compareView() {
 
         createRectangle(i, compareSvg, 400, "100%");
     }
-  } else {
+  } else { //annulus visualization
     d3.select("#animation").text("");
     for (let i = 0; i < heirarchy.tree[0].sections.length; i++) {
       let compareDiv = compare.append("div")

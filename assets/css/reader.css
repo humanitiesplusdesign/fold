@@ -71,9 +71,11 @@ display: none;
 #column-controls {
   width: 100%;
   text-align: center;
-  height: 40px;
+  height: 20px;
   margin-top: 10px;
   display: none;
+  border-bottom: 1px solid black;
+  background-color: gray;
 }
 
 #icon-controls i {
