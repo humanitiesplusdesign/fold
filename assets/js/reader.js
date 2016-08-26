@@ -471,7 +471,7 @@ function displayAnnotationsOfPart(part) {
 
 function displayTopicsofPart(part) {
   d3.selectAll(".topic_rect").style("display", function() {
-    if (d3.select(this).attr("id").split("-")[0] == part) {
+    if (d3.select(this).attr("id").split("-")[1] == part) {
       return "block";
     } else {
       return "none";
