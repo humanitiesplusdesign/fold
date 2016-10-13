@@ -72,6 +72,10 @@ initializeReader();
 *  Initializes the entire application
 */
 function initializeReader() {
+  $("#fileupload").on("change", function() {
+    d3.select("#submit").html("upload text");
+  })
+
   $("#submit").click(function(event) {
     if (d3.select("#fileupload").property("value") == "") {
           $('#fileupload2').click();
@@ -723,6 +727,8 @@ function resetColumns() {
 
   d3.select("#text_container").style("font-size", "1.6vw");
     d3.select("#column_controls").style("display", "none");
+
+  d3.select("#column-controls").style("display", "none");
 }
 
 //removes the highlighted text given an index and an id
@@ -748,7 +754,7 @@ function removeThisTopic(id) {
 /*
 * Creaes an annotation
 */
-function createAnnotation(part, top) {z
+function createAnnotation(part, top) {
   let annotation = d3.select("#right_column").append("div")
     .attr("class", "annotation")
     .attr("id", "annotation-" + part + "-" + top)
@@ -865,6 +871,7 @@ function createAnnulus(part, svg, size) {
       let ring = annulusArray[i];
       drawRing(i, ring.color, annulusArray.length, adjSize, svg);
     }
+    svg.attr("height", adjSize);
 
 }
 
@@ -927,7 +934,7 @@ function compareView() {
         .style("width", (100 / (heirarchy.tree[0].sections.length * 1.3)) + "%");
 
       let compareSvg = compareDiv.append("svg")
-        .attr("height", 400)
+        .attr("height", "100%")
         .attr("width", "66%")
         .style("background-color", "lightgray");
 
@@ -947,11 +954,11 @@ function compareView() {
             });
 
       let compareSvg = compareDiv.append("svg")
-        .attr("height", 400)
+        .attr("height", "100%")
         .attr("width", "100%")
         .attr("stroke", "2px black");
 
-        createAnnulus(i, compareSvg, "100%");
+        createAnnulus(i, compareSvg, "80%");
     }
   }
 }
